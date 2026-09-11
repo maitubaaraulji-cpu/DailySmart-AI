@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DairySmart AI – Smart Dairy Cooperative Management</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a56db;--primary-dark:#1e429f;--primary-light:#e8f0fe;
+  --success:#057a55;--success-light:#def7ec;
+  --warning:#c27803;--warning-light:#fdf6b2;
+  --danger:#e02424;--danger-light:#fde8e8;
+  --purple:#6c2bd9;--purple-light:#edebfe;
+  --bg:#f3f4f6;--surface:#fff;--border:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--sidebar-w:250px;
+}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+#sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,#0f2444 0%,#1a3a6b 55%,#1a56db 100%);min-height:100vh;position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;transition:transform .3s;box-shadow:2px 0 16px rgba(0,0,0,.2)}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sidebar-logo h1{color:#fff;font-size:15px;font-weight:800;line-height:1.3}
+.sidebar-logo p{color:rgba(255,255,255,.5);font-size:11px;margin-top:3px}
+.sidebar-badge{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.sidebar-badge span{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600}
+#nav-menu{padding:10px 8px;flex:1;overflow-y:auto}
+.nav-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em;padding:10px 12px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.7);font-size:12.5px;font-weight:500;transition:all .18s;margin-bottom:1px}
+.nav-item:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.18);color:#fff;font-weight:700}
+.nav-item .ni{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.nav-item .nbadge{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.sidebar-footer{padding:10px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.4);line-height:1.6}
+#main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+#header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+#header h2{font-size:15px;font-weight:700;color:var(--text)}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hbadge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px}
+.hbadge-blue{background:var(--primary-light);color:var(--primary)}
+.hbadge-purple{background:var(--purple-light);color:var(--purple)}
+#content{padding:20px;flex:1}
+.page{display:none}.page.active{display:block}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;transition:box-shadow .2s}
+.kpi-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.kpi-icon{font-size:24px;margin-bottom:8px}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:800;color:var(--text)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.chart-wrap{position:relative;height:190px}
+.chart-wrap-lg{position:relative;height:250px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f9fafb;padding:9px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:600;white-space:nowrap}
+.badge-green{background:var(--success-light);color:var(--success)}
+.badge-red{background:var(--danger-light);color:var(--danger)}
+.badge-yellow{background:var(--warning-light);color:var(--warning)}
+.badge-blue{background:var(--primary-light);color:var(--primary)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.form-group{margin-bottom:13px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--text)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;background:var(--surface);color:var(--text);transition:border .18s;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.form-group .err{color:var(--danger);font-size:11px;margin-top:3px;display:none}
+.form-group.has-error input,.form-group.has-error select{border-color:var(--danger)}
+.form-group.has-error .err{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .18s;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#065f46}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f9fafb}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#92400e}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#5b21b6}
+.btn-sm{padding:6px 12px;font-size:11.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.alert{padding:11px 14px;border-radius:8px;font-size:12.5px;margin-bottom:14px;border-left:4px solid}
+.alert-info{background:#e8f4fd;border-color:#1d9bf0;color:#0c4a6e}
+.alert-success{background:var(--success-light);border-color:var(--success);color:#065f46}
+.alert-warning{background:var(--warning-light);border-color:var(--warning);color:#92400e}
+.alert-danger{background:var(--danger-light);border-color:var(--danger);color:#991b1b}
+.ai-card{background:linear-gradient(135deg,#f5f3ff,#e8f0fe);border:1px solid #c4b5fd;border-radius:10px;padding:14px;margin-bottom:10px}
+.ai-card-header{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--purple);font-size:12.5px;margin-bottom:6px}
+.ai-card p{font-size:12.5px;color:#374151;line-height:1.65}
+.ai-tag{background:#ede9fe;color:var(--purple);font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;margin-left:auto}
+.result-box{background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px}
+.result-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:12.5px}
+.result-row:last-child{border-bottom:none;font-weight:700;color:var(--primary);font-size:14px;padding-top:10px}
+.result-label{color:var(--muted)}
+.progress-bar{height:7px;background:#e5e7eb;border-radius:8px;overflow:hidden}
+.progress-fill{height:100%;border-radius:8px;transition:width .6s}
+.page-hdr{margin-bottom:20px}
+.page-hdr h2{font-size:19px;font-weight:800;color:var(--text)}
+.page-hdr p{font-size:12.5px;color:var(--muted);margin-top:3px}
+.section-title{font-size:13.5px;font-weight:700;color:var(--text);margin:20px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.route-stop{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6}
+.route-stop:last-child{border-bottom:none}
+.stop-num{background:var(--primary);color:#fff;font-size:11px;font-weight:700;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.stop-name{font-weight:700;font-size:12.5px}
+.stop-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.al-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;margin-bottom:8px;border-left:4px solid;font-size:12.5px;position:relative}
+.al-item .al-close{position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px}
+.al-item .al-time{font-size:10.5px;color:var(--muted);margin-top:3px}
+.al-high{background:#fef2f2;border-color:#ef4444;color:#7f1d1d}
+.al-medium{background:#fff7ed;border-color:#f97316;color:#7c2d12}
+.al-warn{background:#fefce8;border-color:#eab308;color:#713f12}
+.al-ok{background:var(--success-light);border-color:var(--success);color:#064e3b}
+.al-info{background:#eff6ff;border-color:#3b82f6;color:#1e3a8a}
+.scen-out{background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin-top:16px}
+.scen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.scen-metric{text-align:center;padding:10px;background:#fff;border-radius:8px;border:1px solid var(--border)}
+.scen-val{font-size:20px;font-weight:800}
+.scen-lbl{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase}
+.risk-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.risk-low{background:#d1fae5;color:#065f46}
+.risk-med{background:#fef3c7;color:#92400e}
+.risk-high{background:#fee2e2;color:#991b1b}
+.impact-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;position:relative;overflow:hidden}
+.impact-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary)}
+.impact-val{font-size:26px;font-weight:800;color:var(--primary);margin:8px 0 4px}
+.impact-lbl{font-size:12px;font-weight:600;color:var(--text)}
+.impact-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.search-row{display:flex;gap:8px;margin-bottom:12px}
+.search-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;outline:none}
+.search-row input:focus{border-color:var(--primary)}
+#chat-messages{height:340px;overflow-y:auto;padding:14px;background:#f9fafb;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:80%;padding:10px 13px;border-radius:12px;font-size:12.5px;line-height:1.55}
+.chat-user{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-bot{background:#fff;border:1px solid var(--border);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-bot-name{font-size:10.5px;font-weight:700;color:var(--purple);margin-bottom:4px}
+.chat-row{display:flex;gap:8px}
+.chat-row input{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;outline:none}
+.chat-row input:focus{border-color:var(--primary)}
+.quick-q{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.quick-q button{background:#fff;border:1.5px solid var(--border);padding:5px 11px;border-radius:18px;font-size:11.5px;cursor:pointer;color:var(--primary);font-weight:500;transition:all .18s}
+.quick-q button:hover{background:var(--primary-light);border-color:var(--primary)}
+#demo-bar{background:linear-gradient(90deg,#1a56db,#6c2bd9);color:#fff;padding:9px 20px;display:none;align-items:center;gap:12px;font-size:12.5px}
+#demo-bar.show{display:flex}
+#toast-wrap{position:fixed;top:68px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 15px;font-size:12.5px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:280px;max-width:340px;display:flex;align-items:flex-start;gap:10px;pointer-events:all;animation:tIn .3s ease;border-left:4px solid var(--primary)}
+.toast-ok{border-color:var(--success)}.toast-warn{border-color:var(--warning)}.toast-err{border-color:var(--danger)}
+.toast-msg{flex:1;line-height:1.5}
+.toast-x{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px}
+@keyframes tIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+#menu-toggle{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text)}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99}
+#overlay.open{display:block}
+@media print{#sidebar,#header,#demo-bar,#toast-wrap,#overlay,.no-print{display:none!important}#main{margin-left:0}.page{display:block!important}body{background:#fff}}
+@media(max-width:900px){.grid-4{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}#sidebar.open{transform:translateX(0)}
+  #main{margin-left:0}.grid-4{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}
+  .form-row,.form-row-3{grid-template-columns:1fr}#menu-toggle{display:block}.scen-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.grid-4{grid-template-columns:1fr}#content{padding:12px}}
+</style>
+</head>
+<body>
+<div id="overlay" onclick="closeSidebar()"></div>
+<div id="toast-wrap"></div>
+
+<!-- DEMO BAR -->
+<div id="demo-bar">
+  <i class="fa fa-play-circle"></i>
+  <strong>DEMO MODE ACTIVE</strong> — Sample cooperative data loaded.
+  <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none;margin-left:auto" onclick="resetData()"><i class="fa fa-times"></i> Exit Demo</button>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1><i class="fa fa-cow" style="color:#7dd3fc"></i> DairySmart AI</h1>
+    <p>Smart Cooperative Management</p>
+    <div class="sidebar-badge"><span>AI-Powered</span><span>Demo v2.0</span></div>
+  </div>
+  <div id="nav-menu">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="ni"><i class="fa fa-th-large"></i></span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('alerts',this)"><span class="ni"><i class="fa fa-bell"></i></span>Smart Alerts<span class="nbadge" id="alert-badge">0</span></div>
+    <div class="nav-section">Operations</div>
+    <div class="nav-item" onclick="showPage('collection',this)"><span class="ni"><i class="fa fa-droplet"></i></span>Milk Collection</div>
+    <div class="nav-item" onclick="showPage('farmers',this)"><span class="ni"><i class="fa fa-users"></i></span>Farmer Records</div>
+    <div class="nav-item" onclick="showPage('payments',this)"><span class="ni"><i class="fa fa-rupee-sign"></i></span>Farmer Payments</div>
+    <div class="nav-section">Analysis</div>
+    <div class="nav-item" onclick="showPage('demand',this)"><span class="ni"><i class="fa fa-scale-balanced"></i></span>Demand &amp; Supply</div>
+    <div class="nav-item" onclick="showPage('route',this)"><span class="ni"><i class="fa fa-truck"></i></span>Route Optimizer</div>
+    <div class="nav-item" onclick="showPage('fodder',this)"><span class="ni"><i class="fa fa-seedling"></i></span>Fodder Forecast</div>
+    <div class="nav-section">Intelligence</div>
+    <div class="nav-item" onclick="showPage('whatif',this)"><span class="ni"><i class="fa fa-flask"></i></span>What-If Simulator</div>
+    <div class="nav-item" onclick="showPage('analytics',this)"><span class="ni"><i class="fa fa-chart-line"></i></span>Analytics</div>
+    <div class="nav-item" onclick="showPage('assistant',this)"><span class="ni"><i class="fa fa-robot"></i></span>AI Assistant</div>
+    <div class="nav-item" onclick="showPage('impact',this)"><span class="ni"><i class="fa fa-globe"></i></span>Impact</div>
+  </div>
+  <div class="sidebar-footer">DairySmart AI v2.0 · Demo Prototype<br>All data simulated for demonstration</div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <header id="header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button id="menu-toggle" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+      <h2 id="page-title">Dashboard</h2>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-success btn-sm" onclick="startDemo()"><i class="fa fa-play"></i> Start Demo</button>
+      <button class="btn btn-outline btn-sm" onclick="generateReport()"><i class="fa fa-print"></i> Report</button>
+      <button class="btn btn-outline btn-sm" onclick="resetData()"><i class="fa fa-rotate-left"></i> Reset</button>
+      <button class="btn btn-outline btn-sm" onclick="showPage('alerts',null)"><i class="fa fa-bell"></i> <span id="hdr-alerts" style="color:var(--danger);font-weight:700">0</span></button>
+      <span class="hbadge hbadge-purple">AI Demo</span>
+    </div>
+  </header>
+  <div id="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-hdr">
+        <h2><i class="fa fa-th-large" style="color:var(--primary)"></i> Cooperative Dashboard</h2>
+        <p>Real-time overview of your dairy cooperative operations</p>
+      </div>
+      <div class="grid-4">
+        <div class="kpi-card"><div class="kpi-icon">🧴</div><div class="kpi-label">Milk Collected</div><div class="kpi-value" id="kpi-milk">0 L</div><div class="kpi-sub" id="kpi-milk-sub">No records yet</div></div>
+        <div class="kpi-card"><div class="kpi-icon">👨‍🌾</div><div class="kpi-label">Active Farmers</div><div class="kpi-value" id="kpi-farmers">0</div><div class="kpi-sub">Registered members</div></div>
+        <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Supply vs Demand</div><div class="kpi-value" id="kpi-gap" style="color:var(--muted)">—</div><div class="kpi-sub" id="kpi-gap-sub">Set in Demand page</div></div>
+        <div class="kpi-card"><div class="kpi-icon">🌾</div><div class="kpi-label">Fodder Stock</div><div class="kpi-value" id="kpi-fodder">—</div><div class="kpi-sub" id="kpi-fodder-sub">Set in Fodder page</div></div>
+        <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-label">Total Payments</div><div class="kpi-value" id="kpi-payments">₹0</div><div class="kpi-sub">Estimated payouts</div></div>
+        <div class="kpi-card"><div class="kpi-icon">🚚</div><div class="kpi-label">Transport Cost</div><div class="kpi-value" id="kpi-transport">₹0</div><div class="kpi-sub">Last route run</div></div>
+        <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-label">Today's Demand</div><div class="kpi-value" id="kpi-demand">0 L</div><div class="kpi-sub">From Demand page</div></div>
+        <div class="kpi-card"><div class="kpi-icon">🎯</div><div class="kpi-label">Efficiency Score</div><div class="kpi-value" id="kpi-eff" style="color:var(--success)">—</div><div class="kpi-sub">Cooperative health</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title" id="chart-title-collect"><i class="fa fa-chart-line" style="color:var(--primary)"></i> Milk Collection Trend</div><div class="chart-wrap"><canvas id="chartCollect"></canvas></div></div>
+        <div class="card"><div class="card-title" id="chart-title-demand"><i class="fa fa-scale-balanced" style="color:var(--success)"></i> Demand vs Supply (7 Days)</div><div class="chart-wrap"><canvas id="chartDemand"></canvas></div></div>
+        <div class="card"><div class="card-title"><i class="fa fa-seedling" style="color:var(--warning)"></i> Fodder Price Trend</div><div class="chart-wrap"><canvas id="chartFodder"></canvas></div></div>
+        <div class="card"><div class="card-title" id="chart-title-transport"><i class="fa fa-truck" style="color:var(--purple)"></i> Transport Cost (Weekly)</div><div class="chart-wrap"><canvas id="chartTransport"></canvas></div></div>
+      </div>
+
+      <!-- ═══ AI MILK PRODUCTION FORECAST CARD ═══ -->
+      <div class="section-title"><i class="fa fa-chart-line" style="color:var(--purple)"></i> AI Milk Production Forecast</div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title" id="forecast-title">
+          <i class="fa fa-chart-line" style="color:var(--purple)"></i> 7-Day Trend Projection
+          <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:4px">— Linear regression on actual collection data</span>
+        </div>
+        <!-- The chart canvas sits in a fixed-height wrapper so it is always visible -->
+        <div class="chart-wrap-lg" style="min-height:250px"><canvas id="chartForecast"></canvas></div>
+        <!-- Insight text filled by refreshForecastChart(). Default text shown until JS runs. -->
+        <div id="forecast-insight" style="margin-top:12px">
+          <div class="ai-card">
+            <div class="ai-card-header">🔮 AI Forecast Engine <span class="ai-tag">Loading…</span></div>
+            <p>Analysing milk collection data. Click <strong>Start Demo</strong> to load sample data, or add collection records with different dates to see the AI forecast.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="fa fa-robot"></i> AI Recommendations</div>
+      <div id="dash-ai-recs">
+        <div class="ai-card"><div class="ai-card-header">📊 Getting Started <span class="ai-tag">AI Engine</span></div><p>Add your first milk collection or click <strong>Start Demo</strong> to load sample data. The AI will then analyse your cooperative and provide smart recommendations.</p></div>
+      </div>
+      <div class="section-title"><i class="fa fa-clock-rotate-left"></i> Recent Activity</div>
+      <div id="activity-log" style="font-size:12.5px;color:var(--muted)">No activity yet.</div>
+    </div>
+
+    <!-- ═══ SMART ALERTS ═══ -->
+    <div id="page-alerts" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-bell" style="color:var(--danger)"></i> Smart Alerts</h2><p>Automated alerts generated from your cooperative data</p></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="filterAlerts('all')">All</button>
+        <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none" onclick="filterAlerts('high')">🔴 High</button>
+        <button class="btn btn-sm" style="background:#ffedd5;color:#7c2d12;border:none" onclick="filterAlerts('medium')">🟠 Medium</button>
+        <button class="btn btn-sm" style="background:#fefce8;color:#713f12;border:none" onclick="filterAlerts('warn')">🟡 Warning</button>
+        <button class="btn btn-sm" style="background:var(--success-light);color:var(--success);border:none" onclick="filterAlerts('ok')">🟢 Success</button>
+        <button class="btn btn-sm" style="background:#eff6ff;color:#1e3a8a;border:none" onclick="filterAlerts('info')">🔵 Info</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="clearAlerts()"><i class="fa fa-trash"></i> Clear All</button>
+      </div>
+      <div id="alerts-container"><div style="color:var(--muted);font-size:13px;padding:20px 0">No alerts yet. Add data or click <strong>Start Demo</strong> to generate alerts.</div></div>
+    </div>
+
+    <!-- ═══ MILK COLLECTION ═══ -->
+    <div id="page-collection" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-droplet" style="color:var(--primary)"></i> Milk Collection</h2><p>Log daily milk collections from farmers</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-plus-circle" style="color:var(--success)"></i> Add Collection Entry</div>
+          <div class="form-row">
+            <div class="form-group" id="fg-cfname">
+              <label>Farmer Name *</label>
+              <input type="text" id="cf-name" placeholder="e.g. Ramesh Patel"/>
+              <div class="err">Farmer name is required</div>
+            </div>
+            <div class="form-group" id="fg-cfid">
+              <label>Farmer ID *</label>
+              <input type="text" id="cf-id" placeholder="e.g. F-001"/>
+              <div class="err">Farmer ID is required</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Collection Center</label>
+              <select id="cf-center"><option>Anand Center</option><option>Nadiad Center</option><option>Kheda Center</option></select>
+            </div>
+            <div class="form-group">
+              <label>Shift</label>
+              <select id="cf-shift"><option>Morning</option><option>Evening</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="fg-cfqty">
+              <label>Milk Quantity (Litres) *</label>
+              <input type="number" id="cf-qty" min="0.1" max="2000" step="0.1" placeholder="e.g. 45"/>
+              <div class="err">Enter a valid quantity (0.1–2000 L)</div>
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="cf-date"/>
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group" id="fg-cffat">
+              <label>Fat % *</label>
+              <input type="number" id="cf-fat" step="0.1" min="0" max="12" placeholder="e.g. 4.2"/>
+              <div class="err">Fat must be 0–12%</div>
+            </div>
+            <div class="form-group" id="fg-cfsnf">
+              <label>SNF % *</label>
+              <input type="number" id="cf-snf" step="0.1" min="0" max="15" placeholder="e.g. 8.5"/>
+              <div class="err">SNF must be 0–15%</div>
+            </div>
+            <div class="form-group">
+              <label>Base Rate (₹/L)</label>
+              <input type="number" id="cf-rate" step="0.5" min="1" value="27" placeholder="27"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="addCollection()"><i class="fa fa-plus"></i> Add Collection</button>
+          <div id="cf-result"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-chart-pie" style="color:var(--primary)"></i> Today's Summary</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="flex:1;min-width:120px;background:#f9fafb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase">Total Collected</div>
+              <div style="font-size:20px;font-weight:800;color:var(--primary);margin-top:4px" id="sum-total">0 L</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:#f9fafb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase">Avg Fat %</div>
+              <div style="font-size:20px;font-weight:800;color:var(--warning);margin-top:4px" id="sum-fat">—</div>
+            </div>
+            <div style="flex:1;min-width:120px;background:#f9fafb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase">Records</div>
+              <div style="font-size:20px;font-weight:800;color:var(--success);margin-top:4px" id="sum-records">0</div>
+            </div>
+          </div>
+          <div class="chart-wrap-lg"><canvas id="chartVillage"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fa fa-table" style="color:var(--muted)"></i> Collection Records
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <input type="text" id="col-search" placeholder="Search farmer…" oninput="filterCollectionTable()" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:160px"/>
+            <button class="btn btn-danger btn-sm" onclick="clearCollectionRecords()"><i class="fa fa-trash"></i> Clear</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Farmer</th><th>ID</th><th>Center</th><th>Shift</th><th>Qty (L)</th><th>Fat%</th><th>SNF%</th><th>Rate</th><th>Est. Value</th><th>Date</th></tr></thead>
+            <tbody id="col-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ FARMER RECORDS ═══ -->
+    <div id="page-farmers" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-users" style="color:var(--primary)"></i> Farmer Records</h2><p>Manage and search all registered farmers</p></div>
+      <div class="card">
+        <div class="card-title"><i class="fa fa-search"></i> Search &amp; Filter
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <input type="text" id="farmer-search" placeholder="Search by name or ID…" oninput="filterFarmerTable()" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:200px"/>
+            <select id="farmer-filter" onchange="filterFarmerTable()" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none">
+              <option value="">All Centers</option>
+              <option>Anand Center</option><option>Nadiad Center</option><option>Kheda Center</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Farmer ID</th><th>Farmer Name</th><th>Milk Collected (L)</th><th>Avg Fat %</th><th>Avg SNF %</th><th>Est. Payment (₹)</th><th>Center</th><th>Status</th></tr></thead>
+            <tbody id="farmer-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FARMER PAYMENTS ═══ -->
+    <div id="page-payments" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-rupee-sign" style="color:var(--success)"></i> Farmer Payment Calculator</h2><p>Calculate and record transparent farmer payments</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-calculator" style="color:var(--primary)"></i> Payment Calculator</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Farmer Name</label>
+              <input type="text" id="pay-name" placeholder="Farmer name"/>
+            </div>
+            <div class="form-group">
+              <label>Payment Period</label>
+              <select id="pay-period">
+                <option>Jan 1–10, 2024</option><option>Jan 11–20, 2024</option><option>Jan 21–31, 2024</option>
+                <option>Feb 1–10, 2024</option><option>Feb 11–20, 2024</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group" id="fg-payqty">
+              <label>Milk Qty (L) *</label>
+              <input type="number" id="pay-qty" min="1" placeholder="e.g. 120"/>
+              <div class="err">Enter valid quantity</div>
+            </div>
+            <div class="form-group" id="fg-payrate">
+              <label>Base Rate (₹/L) *</label>
+              <input type="number" id="pay-rate" value="27" min="1" step="0.5"/>
+              <div class="err">Enter valid rate</div>
+            </div>
+            <div class="form-group">
+              <label>Fat %</label>
+              <input type="number" id="pay-fat" step="0.1" min="0" max="12" placeholder="4.2"/>
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>SNF %</label>
+              <input type="number" id="pay-snf" step="0.1" min="0" max="15" placeholder="8.5"/>
+            </div>
+            <div class="form-group">
+              <label>Quality Bonus (₹)</label>
+              <input type="number" id="pay-bonus" min="0" value="0"/>
+            </div>
+            <div class="form-group">
+              <label>Deductions (₹)</label>
+              <input type="number" id="pay-deduct" min="0" value="0"/>
+            </div>
+          </div>
+          <button class="btn btn-success" style="width:100%" onclick="calculatePayment()"><i class="fa fa-calculator"></i> Calculate Payment</button>
+          <div id="pay-result"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-history"></i> Payment History</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Farmer</th><th>Period</th><th>Qty</th><th>Gross (₹)</th><th>Bonus</th><th>Deduct</th><th>Net (₹)</th><th>Status</th></tr></thead>
+              <tbody id="pay-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fa fa-chart-bar" style="color:var(--primary)"></i> Farmer Earnings Chart</div>
+        <div class="chart-wrap"><canvas id="chartPayments"></canvas></div>
+      </div>
+    </div>
+
+
+    <!-- ═══ DEMAND & SUPPLY ═══ -->
+    <div id="page-demand" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-scale-balanced" style="color:var(--primary)"></i> Demand &amp; Supply Analysis</h2><p>Calculate and analyse milk supply vs customer demand</p></div>
+      <div id="ds-banner" class="alert alert-info"><i class="fa fa-info-circle"></i> Enter values below and click Analyse to see your supply-demand status.</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-sliders"></i> Supply-Demand Inputs</div>
+          <div class="form-group" id="fg-ds-supply">
+            <label>Available Milk Supply (L) *</label>
+            <input type="number" id="ds-supply" min="0" placeholder="e.g. 8000"/>
+            <div class="err">Enter valid supply (≥ 0)</div>
+          </div>
+          <div class="form-group" id="fg-ds-demand">
+            <label>Customer Demand (L) *</label>
+            <input type="number" id="ds-demand" min="0" placeholder="e.g. 9500"/>
+            <div class="err">Enter valid demand (≥ 0)</div>
+          </div>
+          <div class="form-group">
+            <label>Storage Capacity (L)</label>
+            <input type="number" id="ds-storage" min="0" placeholder="e.g. 3000"/>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="calculateDemandSupply()"><i class="fa fa-chart-bar"></i> Analyse Supply vs Demand</button>
+          <div id="ds-result"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-chart-area"></i> 7-Day Trend</div>
+          <div class="chart-wrap-lg"><canvas id="chartDemandDetail"></canvas></div>
+        </div>
+      </div>
+      <div class="section-title">Center-wise Status</div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Center</th><th>Supply (L)</th><th>Demand (L)</th><th>Gap (L)</th><th>Status</th></tr></thead>
+            <tbody id="ds-centers-tbody">
+              <tr><td>Anand Center</td><td id="dc-a-s">—</td><td id="dc-a-d">—</td><td id="dc-a-g">—</td><td id="dc-a-st">—</td></tr>
+              <tr><td>Nadiad Center</td><td id="dc-n-s">—</td><td id="dc-n-d">—</td><td id="dc-n-g">—</td><td id="dc-n-st">—</td></tr>
+              <tr><td>Kheda Center</td><td id="dc-k-s">—</td><td id="dc-k-d">—</td><td id="dc-k-g">—</td><td id="dc-k-st">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="ds-ai-recs"></div>
+    </div>
+
+    <!-- ═══ ROUTE OPTIMIZER ═══ -->
+    <div id="page-route" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-truck" style="color:var(--primary)"></i> Route Optimization</h2><p>Demo AI route optimization — minimizes distance and fuel cost</p></div>
+      <div class="alert alert-info"><i class="fa fa-robot"></i> <strong>Demo AI Route Optimizer:</strong> Uses nearest-neighbor heuristic. Enter your parameters and click Optimize.</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-sliders"></i> Route Parameters</div>
+          <div class="form-row">
+            <div class="form-group" id="fg-r-centers">
+              <label>Number of Collection Centers *</label>
+              <input type="number" id="r-centers" value="3" min="1" max="20"/>
+              <div class="err">Enter 1–20 centers</div>
+            </div>
+            <div class="form-group" id="fg-r-dist">
+              <label>Avg Distance per Center (km) *</label>
+              <input type="number" id="r-dist" value="8" min="0.1" step="0.1"/>
+              <div class="err">Enter valid distance</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="fg-r-qty">
+              <label>Total Milk Qty (L) *</label>
+              <input type="number" id="r-qty" value="480" min="1"/>
+              <div class="err">Enter valid quantity</div>
+            </div>
+            <div class="form-group" id="fg-r-vehicles">
+              <label>Number of Vehicles *</label>
+              <input type="number" id="r-vehicles" value="2" min="1" max="50"/>
+              <div class="err">Enter 1–50 vehicles</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="fg-r-fuel">
+              <label>Fuel Price (₹/L) *</label>
+              <input type="number" id="r-fuel" value="95" min="1" step="0.5"/>
+              <div class="err">Enter valid fuel price</div>
+            </div>
+            <div class="form-group">
+              <label>Vehicle Capacity (L each)</label>
+              <input type="number" id="r-cap" value="500" min="50"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="optimizeRoute()"><i class="fa fa-route"></i> Run Route Optimization</button>
+          <div id="route-result"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-map-marker-alt"></i> Farm Locations</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Farm</th><th>Village</th><th>Milk (L)</th><th>Dist (km)</th></tr></thead>
+              <tbody>
+                <tr><td>Ramesh Patel</td><td>Anand</td><td>45</td><td>2.1</td></tr>
+                <tr><td>Suresh Desai</td><td>Karamsad</td><td>38</td><td>4.8</td></tr>
+                <tr><td>Manubhai Shah</td><td>Sojitra</td><td>52</td><td>7.2</td></tr>
+                <tr><td>Dinesh Rao</td><td>Anand</td><td>30</td><td>3.1</td></tr>
+                <tr><td>Kiran Modi</td><td>Nadiad</td><td>67</td><td>9.5</td></tr>
+                <tr><td>Bhavesh Joshi</td><td>Karamsad</td><td>41</td><td>5.3</td></tr>
+                <tr><td>Harish Kumar</td><td>Borsad</td><td>55</td><td>11.2</td></tr>
+                <tr><td>Priya Patel</td><td>Sojitra</td><td>33</td><td>6.8</td></tr>
+                <tr><td>Nilesh Solanki</td><td>Nadiad</td><td>49</td><td>10.1</td></tr>
+                <tr><td>Vijay Chauhan</td><td>Borsad</td><td>70</td><td>12.4</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FODDER FORECAST ═══ -->
+    <div id="page-fodder" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-seedling" style="color:var(--warning)"></i> Fodder Forecast</h2><p>Predict fodder requirements and shortage risks</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-calculator"></i> Fodder Forecast Calculator</div>
+          <div class="form-row">
+            <div class="form-group" id="fg-fo-cattle">
+              <label>Number of Cattle *</label>
+              <input type="number" id="fo-cattle" min="1" placeholder="e.g. 50"/>
+              <div class="err">Enter valid cattle count</div>
+            </div>
+            <div class="form-group" id="fg-fo-stock">
+              <label>Current Fodder Stock (kg) *</label>
+              <input type="number" id="fo-stock" min="0" placeholder="e.g. 2500"/>
+              <div class="err">Enter valid stock (≥ 0)</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="fg-fo-daily">
+              <label>Daily Consumption per Cattle (kg) *</label>
+              <input type="number" id="fo-daily" value="2" min="0.1" step="0.1"/>
+              <div class="err">Enter valid daily consumption</div>
+            </div>
+            <div class="form-group" id="fg-fo-days">
+              <label>Forecast Days *</label>
+              <input type="number" id="fo-days" value="30" min="1" max="365"/>
+              <div class="err">Enter 1–365 days</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fodder Price (₹/kg)</label>
+              <input type="number" id="fo-price" value="32" min="0" step="0.5"/>
+            </div>
+            <div class="form-group">
+              <label>Buffer Safety %</label>
+              <input type="number" id="fo-buffer" value="10" min="0" max="50"/>
+            </div>
+          </div>
+          <button class="btn btn-warning" style="width:100%;color:#fff" onclick="calculateFodder()"><i class="fa fa-seedling"></i> Calculate Fodder Forecast</button>
+          <div id="fo-result"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-chart-line"></i> Fodder Price Trend</div>
+          <div class="chart-wrap-lg"><canvas id="chartFodderDetail"></canvas></div>
+          <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600">Current Price</div>
+              <div style="font-size:18px;font-weight:800;color:var(--warning);margin-top:4px" id="fo-cur-price">₹32.40/kg</div>
+            </div>
+            <div style="flex:1;background:#f9fafb;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600">7-Day Forecast</div>
+              <div style="font-size:18px;font-weight:800;color:var(--danger);margin-top:4px" id="fo-pred-price">₹33.80/kg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ WHAT-IF SIMULATOR ═══ -->
+    <div id="page-whatif" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-flask" style="color:var(--purple)"></i> What-If Scenario Simulator</h2><p>Explore hypothetical scenarios and understand their impact on your cooperative</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fa fa-sliders" style="color:var(--purple)"></i> Scenario Inputs</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Milk Collection (L)</label>
+              <input type="number" id="wi-milk" value="10000" min="0"/>
+            </div>
+            <div class="form-group">
+              <label>Customer Demand (L)</label>
+              <input type="number" id="wi-demand" value="8000" min="0"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of Farmers</label>
+              <input type="number" id="wi-farmers" value="10" min="1"/>
+            </div>
+            <div class="form-group">
+              <label>Number of Vehicles</label>
+              <input type="number" id="wi-vehicles" value="3" min="1"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fuel Price (₹/L)</label>
+              <input type="number" id="wi-fuel" value="95" min="1" step="0.5"/>
+            </div>
+            <div class="form-group">
+              <label>Fodder Stock (kg)</label>
+              <input type="number" id="wi-fodder" value="5000" min="0"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Avg Distance / Route (km)</label>
+              <input type="number" id="wi-dist" value="60" min="1"/>
+            </div>
+            <div class="form-group">
+              <label>Base Rate (₹/L)</label>
+              <input type="number" id="wi-rate" value="27" min="1" step="0.5"/>
+            </div>
+          </div>
+          <button class="btn btn-purple" style="width:100%" onclick="runScenario()"><i class="fa fa-play"></i> Run Scenario</button>
+        </div>
+        <div id="wi-output" class="card" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">
+          <div style="text-align:center"><i class="fa fa-flask" style="font-size:40px;margin-bottom:12px;opacity:.3"></i><br>Enter values and click <strong>Run Scenario</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ANALYTICS ═══ -->
+    <div id="page-analytics" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-chart-line" style="color:var(--primary)"></i> Cooperative Analytics</h2><p>Performance insights and trends</p></div>
+      <div class="grid-4">
+        <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-label">Monthly Collection</div><div class="kpi-value" id="an-monthly">0 L</div><div class="kpi-sub">All records combined</div></div>
+        <div class="kpi-card"><div class="kpi-icon">👨‍🌾</div><div class="kpi-label">Unique Farmers</div><div class="kpi-value" id="an-farmers">0</div><div class="kpi-sub">Distinct contributors</div></div>
+        <div class="kpi-card"><div class="kpi-icon">💵</div><div class="kpi-label">Total Payouts</div><div class="kpi-value" id="an-payouts">₹0</div><div class="kpi-sub">Estimated this period</div></div>
+        <div class="kpi-card"><div class="kpi-icon">🎯</div><div class="kpi-label">Avg Fat Quality</div><div class="kpi-value" id="an-fat">—</div><div class="kpi-sub">Across all collections</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title"><i class="fa fa-chart-bar"></i> Village-wise Collection</div><div class="chart-wrap-lg"><canvas id="chartVillageBar"></canvas></div></div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-trophy"></i> Farmer Performance Ranking</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Rank</th><th>Farmer</th><th>Total (L)</th><th>Avg Fat%</th><th>Score</th></tr></thead>
+              <tbody id="an-perf-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fa fa-chart-area"></i> 30-Day Collection Performance</div>
+        <div class="chart-wrap-lg"><canvas id="chartPerf"></canvas></div>
+      </div>
+      <div class="section-title"><i class="fa fa-robot"></i> AI Performance Insights</div>
+      <div id="an-ai-recs">
+        <div class="ai-card"><div class="ai-card-header">📊 No Data Yet <span class="ai-tag">Analytics Engine</span></div><p>Add milk collection records or run a demo to see AI-generated performance insights.</p></div>
+      </div>
+    </div>
+
+    <!-- ═══ AI ASSISTANT ═══ -->
+    <div id="page-assistant" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-robot" style="color:var(--purple)"></i> AI Decision Assistant</h2><p>Demo intelligence — analyses your cooperative data and answers questions</p></div>
+      <div class="alert alert-warning"><i class="fa fa-triangle-exclamation"></i> <strong>Demo AI:</strong> Responses use rule-based logic on your actual entered data. Label: <em>AI Decision Assistant – Demo Intelligence</em></div>
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title"><i class="fa fa-comments" style="color:var(--purple)"></i> Chat with DairySmart AI</div>
+            <div id="chat-messages">
+              <div class="chat-msg chat-bot"><div class="chat-bot-name">🤖 DairySmart AI Assistant</div>Hello! I'm your AI dairy cooperative assistant (Demo Mode). I can analyse your entered data and answer questions about milk collection, payments, fodder, demand-supply, and route optimization. What would you like to know?</div>
+            </div>
+            <div class="chat-row">
+              <input type="text" id="chat-input" placeholder="Ask about your cooperative data…" onkeydown="if(event.key==='Enter')sendChat()"/>
+              <button class="btn btn-primary" onclick="sendChat()"><i class="fa fa-paper-plane"></i> Send</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title"><i class="fa fa-bolt"></i> Quick Questions</div>
+            <div class="quick-q">
+              <button onclick="askQuick('How much milk was collected?')">Milk collected today?</button>
+              <button onclick="askQuick('What is the demand supply status?')">Demand-supply status?</button>
+              <button onclick="askQuick('What is the fodder situation?')">Fodder situation?</button>
+              <button onclick="askQuick('Who is the top farmer?')">Top farmer?</button>
+              <button onclick="askQuick('What is the transport cost?')">Transport cost?</button>
+              <button onclick="askQuick('Give me a cooperative health summary')">Cooperative health?</button>
+              <button onclick="askQuick('What are the smart alerts?')">Active alerts?</button>
+              <button onclick="askQuick('What is the payment total?')">Payment total?</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa fa-lightbulb" style="color:var(--warning)"></i> Current Situation Analysis</div>
+            <div id="ai-situation"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ IMPACT ═══ -->
+    <div id="page-impact" class="page">
+      <div class="page-hdr"><h2><i class="fa fa-globe" style="color:var(--success)"></i> Simulated Demo Impact</h2><p>Projected benefits — <strong>clearly labelled as simulated demo metrics, not real-world results</strong></p></div>
+      <div class="alert alert-info"><i class="fa fa-info-circle"></i> All metrics below are <strong>simulated projections</strong> based on demo data. They illustrate the potential impact of DairySmart AI in a real cooperative scenario.</div>
+      <div class="grid-3">
+        <div class="impact-card"><div style="font-size:28px">🚚</div><div class="impact-val">12–15%</div><div class="impact-lbl">Transport Cost Reduction</div><div class="impact-sub">Via AI route optimization</div></div>
+        <div class="impact-card" style="--primary:var(--success)"><div style="font-size:28px">🥛</div><div class="impact-val" style="color:var(--success)">8–10%</div><div class="impact-lbl">Milk Wastage Reduction</div><div class="impact-sub">Better demand matching</div></div>
+        <div class="impact-card" style="--primary:var(--purple)"><div style="font-size:28px">👨‍🌾</div><div class="impact-val" style="color:var(--purple)">100%</div><div class="impact-lbl">Farmer Payment Transparency</div><div class="impact-sub">Full audit trail per payment</div></div>
+        <div class="impact-card"><div style="font-size:28px">📊</div><div class="impact-val">95%+</div><div class="impact-lbl">Supply-Demand Match Rate</div><div class="impact-sub">Improved procurement planning</div></div>
+        <div class="impact-card" style="--primary:var(--warning)"><div style="font-size:28px">🌾</div><div class="impact-val" style="color:var(--warning)">20–25%</div><div class="impact-lbl">Fodder Cost Savings</div><div class="impact-sub">Through advance procurement</div></div>
+        <div class="impact-card" style="--primary:var(--success)"><div style="font-size:28px">🎯</div><div class="impact-val" style="color:var(--success)">+18%</div><div class="impact-lbl">Cooperative Efficiency</div><div class="impact-sub">Combined operational gains</div></div>
+      </div>
+      <div class="section-title">Problem → Solution Story</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color:var(--danger)"><i class="fa fa-triangle-exclamation"></i> Problems Solved</div>
+          <ul style="padding-left:18px;font-size:13px;line-height:2.2;color:var(--text)">
+            <li>Manual milk collection records → <strong>Digital, validated logs</strong></li>
+            <li>Opaque farmer payments → <strong>Transparent, auditable calculations</strong></li>
+            <li>Supply-demand mismatch → <strong>Real-time gap analysis</strong></li>
+            <li>Unoptimized transport routes → <strong>AI-optimized routing</strong></li>
+            <li>Fodder shortages → <strong>Predictive forecasting</strong></li>
+            <li>No scenario planning → <strong>What-If simulator</strong></li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--success)"><i class="fa fa-check-circle"></i> DairySmart AI Advantage</div>
+          <ul style="padding-left:18px;font-size:13px;line-height:2.2;color:var(--text)">
+            <li>Single platform for all cooperative operations</li>
+            <li>Works offline — runs directly in the browser</li>
+            <li>No internet or server required</li>
+            <li>LocalStorage — data persists across sessions</li>
+            <li>AI-driven recommendations with explanations</li>
+            <li>Hackathon-ready demo mode included</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+var appState = {
+  collections: [],
+  payments: [],
+  alerts: [],
+  activityLog: [],
+  lastDemandSupply: null,
+  lastRoute: null,
+  lastFodder: null,
+  lastScenario: null
+};
+
+// ═══════════════════════════════════════════════════════
+// SAMPLE DATA
+// ═══════════════════════════════════════════════════════
+// Demo data is spread across 7 different dates so that "Start Demo" immediately
+// shows the full AI Forecast with a dashed prediction line on the Dashboard.
+// Day totals: Jan-09=70, Jan-10=78, Jan-11=75, Jan-12=92, Jan-13=90, Jan-14=103, Jan-15=120
+// Verified: slope ≈ +7.7 L/day, R² ≈ 0.90 → "High confidence" forecast shown immediately.
+var DEMO_COLLECTIONS = [
+  {id:'F-002',name:'Suresh Desai',   center:'Anand Center',  shift:'Morning', qty:38,  fat:4.0, snf:8.3, rate:27, date:'2024-01-09'},
+  {id:'F-004',name:'Dinesh Rao',     center:'Anand Center',  shift:'Morning', qty:32,  fat:3.9, snf:8.1, rate:27, date:'2024-01-09'},
+  {id:'F-008',name:'Priya Patel',    center:'Nadiad Center', shift:'Morning', qty:35,  fat:4.0, snf:8.2, rate:27, date:'2024-01-10'},
+  {id:'F-006',name:'Bhavesh Joshi',  center:'Anand Center',  shift:'Morning', qty:43,  fat:4.1, snf:8.4, rate:27, date:'2024-01-10'},
+  {id:'F-001',name:'Ramesh Patel',   center:'Anand Center',  shift:'Morning', qty:45,  fat:4.2, snf:8.5, rate:27, date:'2024-01-11'},
+  {id:'F-004',name:'Dinesh Rao',     center:'Anand Center',  shift:'Evening', qty:30,  fat:3.9, snf:8.1, rate:27, date:'2024-01-11'},
+  {id:'F-003',name:'Manubhai Shah',  center:'Nadiad Center', shift:'Evening', qty:52,  fat:4.5, snf:8.7, rate:27, date:'2024-01-12'},
+  {id:'F-009',name:'Nilesh Solanki', center:'Nadiad Center', shift:'Evening', qty:40,  fat:4.2, snf:8.5, rate:27, date:'2024-01-12'},
+  {id:'F-005',name:'Kiran Modi',     center:'Nadiad Center', shift:'Evening', qty:55,  fat:4.3, snf:8.6, rate:27, date:'2024-01-13'},
+  {id:'F-002',name:'Suresh Desai',   center:'Anand Center',  shift:'Evening', qty:35,  fat:4.0, snf:8.3, rate:27, date:'2024-01-13'},
+  {id:'F-007',name:'Harish Kumar',   center:'Kheda Center',  shift:'Evening', qty:65,  fat:4.4, snf:8.7, rate:27, date:'2024-01-14'},
+  {id:'F-008',name:'Priya Patel',    center:'Nadiad Center', shift:'Evening', qty:38,  fat:4.0, snf:8.2, rate:27, date:'2024-01-14'},
+  {id:'F-010',name:'Vijay Chauhan',  center:'Kheda Center',  shift:'Morning', qty:70,  fat:4.6, snf:8.9, rate:27, date:'2024-01-15'},
+  {id:'F-001',name:'Ramesh Patel',   center:'Anand Center',  shift:'Evening', qty:50,  fat:4.2, snf:8.5, rate:27, date:'2024-01-15'}
+];
+
+var FODDER_HIST = [29.5,29.8,30.0,30.2,30.1,30.5,30.8,31.0,30.9,31.2,31.5,31.4,31.8,32.0,31.9,32.2,32.5,32.4,32.8,33.0,32.9,33.2,33.5,33.4,33.8,34.0,33.9,34.2,34.5,34.8];
+var DAYS30 = Array.from({length:30},function(_,i){return 'Day '+(i+1)});
+
+// ═══════════════════════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════════════════════
+function saveToStorage() {
+  try { localStorage.setItem('dairySmartState', JSON.stringify(appState)); } catch(e){}
+}
+function loadFromStorage() {
+  try {
+    var raw = localStorage.getItem('dairySmartState');
+    if (raw) { var s = JSON.parse(raw); Object.assign(appState, s); }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST NOTIFICATIONS
+// ═══════════════════════════════════════════════════════
+function toast(msg, type) {
+  type = type || 'info';
+  var cls = type==='ok'?'toast-ok':type==='warn'?'toast-warn':type==='err'?'toast-err':'';
+  var wrap = document.getElementById('toast-wrap');
+  var t = document.createElement('div');
+  t.className = 'toast ' + cls;
+  var icon = type==='ok'?'✅':type==='warn'?'⚠️':type==='err'?'❌':'ℹ️';
+  t.innerHTML = '<span class="toast-msg">'+icon+' '+msg+'</span><button class="toast-x" onclick="this.parentElement.remove()">×</button>';
+  wrap.appendChild(t);
+  setTimeout(function(){ if(t.parentElement) t.remove(); }, 4000);
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+var PAGE_TITLES = {dashboard:'Dashboard',alerts:'Smart Alerts',collection:'Milk Collection',farmers:'Farmer Records',payments:'Farmer Payments',demand:'Demand & Supply',route:'Route Optimizer',fodder:'Fodder Forecast',whatif:'What-If Simulator',analytics:'Analytics',assistant:'AI Assistant',impact:'Impact'};
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var pg = document.getElementById('page-'+id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[id] || id;
+  closeSidebar();
+  if (id==='collection') renderCollectionTable();
+  if (id==='farmers') renderFarmerTable();
+  if (id==='payments') { renderPaymentHistory(); refreshPaymentChart(); }
+  if (id==='analytics') refreshAnalytics();
+  if (id==='assistant') refreshAISituation();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+// VALIDATION HELPERS
+// ═══════════════════════════════════════════════════════
+function fieldErr(fgId, show) {
+  var fg = document.getElementById(fgId);
+  if (!fg) return;
+  if (show) fg.classList.add('has-error'); else fg.classList.remove('has-error');
+}
+function numVal(id, min, max) {
+  var v = parseFloat(document.getElementById(id).value);
+  if (isNaN(v)) return null;
+  if (min !== undefined && v < min) return null;
+  if (max !== undefined && v > max) return null;
+  return v;
+}
+function strVal(id) {
+  var v = (document.getElementById(id).value || '').trim();
+  return v.length > 0 ? v : null;
+}
+function fmt(n) { return n.toLocaleString('en-IN'); }
+function fmtR(n) { return '₹' + fmt(Math.round(n)); }
+
+// ═══════════════════════════════════════════════════════
+// ACTIVITY LOG
+// ═══════════════════════════════════════════════════════
+function addActivity(msg) {
+  var now = new Date();
+  var ts = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  appState.activityLog.unshift('['+ts+'] '+msg);
+  if (appState.activityLog.length > 20) appState.activityLog.pop();
+  renderActivityLog();
+}
+function renderActivityLog() {
+  var el = document.getElementById('activity-log');
+  if (!el) return;
+  if (!appState.activityLog.length) { el.textContent='No activity yet.'; return; }
+  el.innerHTML = appState.activityLog.slice(0,10).map(function(a){
+    return '<div style="padding:5px 0;border-bottom:1px solid #f3f4f6;color:var(--text)">'+a+'</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// SMART ALERTS
+// ═══════════════════════════════════════════════════════
+function addAlert(level, icon, title, body) {
+  appState.alerts.unshift({ id: Date.now(), level:level, icon:icon, title:title, body:body, time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) });
+  if (appState.alerts.length > 50) appState.alerts.pop();
+  updateAlertBadge();
+  renderAlerts();
+  saveToStorage();
+}
+function updateAlertBadge() {
+  var cnt = appState.alerts.length;
+  ['alert-badge','hdr-alerts'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.textContent = cnt;
+  });
+}
+function renderAlerts(filter) {
+  var container = document.getElementById('alerts-container');
+  if (!container) return;
+  var list = appState.alerts;
+  if (filter && filter !== 'all') list = list.filter(function(a){ return a.level===filter; });
+  if (!list.length) { container.innerHTML='<div style="color:var(--muted);padding:20px 0;font-size:13px">No alerts'+(filter&&filter!=='all'?' in this category':'yet')+'. Add data or run demo.</div>'; return; }
+  container.innerHTML = list.map(function(a){
+    return '<div class="al-item al-'+a.level+'" id="al-'+a.id+'">'+
+      '<div style="flex:1"><div style="font-weight:700">'+a.icon+' '+a.title+'</div>'+
+      '<div style="margin-top:3px">'+a.body+'</div>'+
+      '<div class="al-time">'+a.time+'</div></div>'+
+      '<button class="al-close" onclick="dismissAlert('+a.id+')">×</button></div>';
+  }).join('');
+}
+function dismissAlert(id) {
+  appState.alerts = appState.alerts.filter(function(a){ return a.id!==id; });
+  updateAlertBadge(); renderAlerts(); saveToStorage();
+}
+function clearAlerts() { appState.alerts=[]; updateAlertBadge(); renderAlerts(); saveToStorage(); }
+function filterAlerts(f) { renderAlerts(f); }
+
+// ═══════════════════════════════════════════════════════
+// CHART HELPER
+// ═══════════════════════════════════════════════════════
+function makeChart(id, type, labels, datasets, opts) {
+  var ctx = document.getElementById(id);
+  if (!ctx) return null;
+  if (ctx._ci) { ctx._ci.destroy(); }
+  var legend = (opts && opts.legend !== undefined) ? opts.legend : false;
+  var c = new Chart(ctx, {
+    type: type,
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: legend }, tooltip: { mode:'index', intersect:false } },
+      scales: (type==='pie'||type==='doughnut') ? {} : {
+        x: { grid:{display:false}, ticks:{font:{size:10},maxTicksLimit:8} },
+        y: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}} }
+      }
+    }
+  });
+  ctx._ci = c;
+  return c;
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD CHARTS (static seed data used as fallback)
+// ═══════════════════════════════════════════════════════
+var COLLECT_SEED = [2180,2250,2310,2190,2400,2480,2360,2290,2420,2500,2380,2310,2440,2520,2390,2270,2410,2490,2370,2300,2450,2530,2400,2320,2460,2540,2420,2350,2480,2560];
+var DEMAND_SEED  = [2100,2150,2200,2100,2250,2200,2180,2150,2220,2280,2200,2150,2250,2300,2200,2100,2220,2280,2200,2150,2250,2320,2250,2180,2280,2350,2280,2200,2320,2400];
+var TRANSPORT_W  = ['Week 1','Week 2','Week 3','Week 4'];
+var TRANSPORT_D  = [21200,22400,20800,22900];
+
+// ─── Helper: group collections by date, return sorted {labels, totals} ───
+// This converts the raw records array into two parallel arrays suitable
+// for a Chart.js chart.  E.g. labels=['2024-01-15','2024-01-16'],
+//   totals=[480, 310]
+function getCollectionByDate() {
+  var map = {};
+  appState.collections.forEach(function(r) {
+    map[r.date] = (map[r.date] || 0) + r.qty;
+  });
+  // Sort dates ascending (string comparison works for YYYY-MM-DD)
+  var dates = Object.keys(map).sort();
+  return {
+    labels: dates,
+    totals: dates.map(function(d){ return map[d]; })
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// AI FORECAST — MATH FUNCTIONS
+// Three pure functions. They take data in and return results out.
+// No side effects (they don't touch the DOM or appState directly).
+// ═══════════════════════════════════════════════════════
+
+// ─── computeLinearRegression(values) ────────────────────────────────────────
+// WHAT IT DOES: Fits a straight line through a series of numbers.
+//
+// Think of it like this: you have 7 data points (daily milk totals).
+// This function finds the best straight line (y = m*x + b) that passes
+// through all those points as closely as possible.
+//
+//   m = slope     → how much milk changes per day (positive = going up)
+//   b = intercept → the starting value of the line
+//   r2 = R-squared → how well the line fits (0 = terrible, 1 = perfect)
+//
+// Returns: { slope, intercept, r2 }
+function computeLinearRegression(values) {
+  var n = values.length;
+  if (n < 2) return { slope: 0, intercept: values[0] || 0, r2: 0 };
+
+  // x values are just 0, 1, 2, 3, ... (day index)
+  var sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+  for (var i = 0; i < n; i++) {
+    sumX  += i;
+    sumY  += values[i];
+    sumXY += i * values[i];
+    sumXX += i * i;
+  }
+
+  // Standard least-squares formulas
+  var denom = (n * sumXX - sumX * sumX);
+  if (denom === 0) return { slope: 0, intercept: sumY / n, r2: 0 };
+
+  var slope     = (n * sumXY - sumX * sumY) / denom;
+  var intercept = (sumY - slope * sumX) / n;
+
+  // R² tells us how well the line explains the data.
+  // SS_res = sum of squared distances from the line
+  // SS_tot = sum of squared distances from the mean
+  var meanY = sumY / n;
+  var ss_res = 0, ss_tot = 0;
+  for (var j = 0; j < n; j++) {
+    var predicted = slope * j + intercept;
+    ss_res += (values[j] - predicted) * (values[j] - predicted);
+    ss_tot += (values[j] - meanY) * (values[j] - meanY);
+  }
+  var r2 = ss_tot === 0 ? 1 : Math.max(0, 1 - ss_res / ss_tot);
+
+  return { slope: slope, intercept: intercept, r2: r2 };
+}
+
+// ─── buildForecastPoints(byDate, forecastDays) ──────────────────────────────
+// WHAT IT DOES: Uses the regression to extend the line N days into the future.
+//
+// Takes the output of getCollectionByDate() and a number of days to forecast.
+// Returns an object with everything needed to draw the chart and the insight card.
+//
+// Returned { status } can be:
+//   'no-data'        → appState.collections is empty
+//   'insufficient'   → fewer than 3 unique dates (can't trust a regression)
+//   'low-confidence' → R² < 0.5 (data is too scattered for a reliable forecast)
+//   'ok'             → R² ≥ 0.5 (good enough for a 7-day projection)
+function buildForecastPoints(byDate, forecastDays) {
+  var n = byDate.labels.length;
+
+  // Not enough data at all
+  if (n === 0) {
+    return { status: 'no-data' };
+  }
+  if (n < 3) {
+    return {
+      status: 'insufficient',
+      actualLabels: byDate.labels,
+      actualValues: byDate.totals,
+      datesAvailable: n
+    };
+  }
+
+  var reg = computeLinearRegression(byDate.totals);
+
+  // Generate forecast date labels by adding 1 day to the last real date
+  // for each step of the forecast horizon.
+  var forecastLabels = [];
+  var forecastValues = [];
+  var lastDate = new Date(byDate.labels[n - 1] + 'T00:00:00'); // force local midnight
+  for (var i = 1; i <= forecastDays; i++) {
+    var nextDate = new Date(lastDate.getTime() + i * 86400000); // add i days in ms
+    // Format as YYYY-MM-DD
+    var yyyy = nextDate.getFullYear();
+    var mm   = String(nextDate.getMonth() + 1).padStart(2, '0');
+    var dd   = String(nextDate.getDate()).padStart(2, '0');
+    forecastLabels.push(yyyy + '-' + mm + '-' + dd);
+    // Predicted value: slope * (n + i - 1) + intercept, clamped to 0
+    var predicted = reg.slope * (n - 1 + i) + reg.intercept;
+    forecastValues.push(Math.max(0, Math.round(predicted)));
+  }
+
+  // Determine forecast quality
+  var status = reg.r2 >= 0.5 ? 'ok' : 'low-confidence';
+
+  return {
+    status:         status,
+    actualLabels:   byDate.labels,
+    actualValues:   byDate.totals,
+    forecastLabels: forecastLabels,
+    forecastValues: forecastValues,
+    slope:          reg.slope,
+    intercept:      reg.intercept,
+    r2:             reg.r2,
+    datesAvailable: n
+  };
+}
+
+// ─── getForecastInsight(result) ──────────────────────────────────────────────
+// WHAT IT DOES: Turns the forecast result object into a human-readable HTML string.
+//
+// Shows:
+//   - Trend direction (up / down / flat) and magnitude (litres per day)
+//   - 7-day total projection
+//   - R² confidence value with plain explanation
+//   - Honest limitation note about what the model can and cannot do
+//
+// Returns an HTML string that uses the existing .ai-card / .ai-card-header CSS classes.
+function getForecastInsight(result) {
+  // Case 1: no data at all — silent (chart shows seed data, no insight needed)
+  if (result.status === 'no-data') return '';
+
+  // Case 2: fewer than 3 dates — explain what is needed
+  if (result.status === 'insufficient') {
+    return '<div class="ai-card" style="margin-top:0">' +
+      '<div class="ai-card-header">📊 Insufficient Data for Forecast <span class="ai-tag">Forecast Engine</span></div>' +
+      '<p>Found <strong>' + result.datesAvailable + ' day' + (result.datesAvailable === 1 ? '' : 's') + '</strong> of collection data. ' +
+      'The AI needs at least <strong>3 different dates</strong> to compute a reliable trend line. ' +
+      'Add collection entries on more dates and the forecast will appear automatically.</p>' +
+      '<p style="font-size:11.5px;color:var(--muted);margin-top:6px;margin-bottom:0">' +
+      '⚠️ <em>Honest limitation: Linear regression requires at least 3 points to produce a meaningful result.</em></p>' +
+      '</div>';
+  }
+
+  // Cases 3 & 4: we have a regression result
+  var slopePerDay = result.slope;
+  var trendIcon  = slopePerDay > 2 ? '📈' : slopePerDay < -2 ? '📉' : '➡️';
+  var trendWord  = slopePerDay > 2 ? 'increasing' : slopePerDay < -2 ? 'decreasing' : 'stable';
+  var trendAbs   = Math.abs(slopePerDay).toFixed(1);
+
+  // Sum the 7-day forecast
+  var total7Day  = result.forecastValues.reduce(function(s, v){ return s + v; }, 0);
+
+  // Last actual value and forecast endpoint
+  var lastActual    = result.actualValues[result.actualValues.length - 1];
+  var forecastEnd   = result.forecastValues[result.forecastValues.length - 1];
+  var r2Pct         = Math.round(result.r2 * 100);
+
+  // Confidence description
+  var confDesc = result.r2 >= 0.75 ? 'High confidence' :
+                 result.r2 >= 0.5  ? 'Moderate confidence' :
+                                     'Low confidence — data is scattered';
+
+  // Case 3: low confidence — show trend only, no numeric projection promise
+  if (result.status === 'low-confidence') {
+    return '<div class="ai-card" style="margin-top:0">' +
+      '<div class="ai-card-header">' + trendIcon + ' Trend Detected — Low Confidence <span class="ai-tag">Forecast Engine</span></div>' +
+      '<p>Production is generally <strong>' + trendWord + '</strong> (' + trendAbs + ' L/day slope). ' +
+      'However, R² = <strong>' + r2Pct + '%</strong> — the data is too scattered for a reliable 7-day projection. ' +
+      'The dashed line shows the mathematical trend but should not be used for procurement decisions.</p>' +
+      '<p style="font-size:11.5px;color:var(--muted);margin-top:6px;margin-bottom:0">' +
+      '⚠️ <em>Add more collection days to improve forecast confidence.</em></p>' +
+      '</div>';
+  }
+
+  // Case 4: good confidence — show full forecast insight
+  return '<div class="ai-card" style="margin-top:0">' +
+    '<div class="ai-card-header">' + trendIcon + ' 7-Day Forecast <span class="ai-tag">Forecast Engine</span></div>' +
+    '<p>' +
+    'Milk production is <strong>' + trendWord + '</strong> at approximately <strong>' + trendAbs + ' litres/day</strong>. ' +
+    'Current daily level: <strong>' + lastActual + ' L</strong> → ' +
+    'Projected Day 7: <strong>' + forecastEnd + ' L</strong>. ' +
+    '7-day total projection: <strong>' + fmt(total7Day) + ' L</strong>.</p>' +
+    '<p style="font-size:12px;color:var(--muted);margin-top:5px">' +
+    confDesc + ' (R² = ' + r2Pct + '% — the trend line explains ' + r2Pct + '% of the variation in your data). ' +
+    'Based on <strong>' + result.datesAvailable + ' days</strong> of actual records.</p>' +
+    '<p style="font-size:11.5px;color:var(--muted);margin-top:4px;margin-bottom:0">' +
+    '⚠️ <em>Forecast uses linear regression — assumes the current trend continues. ' +
+    'Seasonal changes, weather, and festivals may cause actual results to differ.</em></p>' +
+    '</div>';
+}
+
+// ─── Helper: update just the chart card title to show data source ───
+function setChartDataLabel(titleId, usingReal) {
+  var el = document.getElementById(titleId);
+  if (!el) return;
+  // Remove any old badge first
+  var old = el.querySelector('.chart-data-badge');
+  if (old) old.remove();
+  var badge = document.createElement('span');
+  badge.className = 'chart-data-badge';
+  badge.style.cssText = 'margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;' +
+    (usingReal
+      ? 'background:#d1fae5;color:#065f46'   // green = real data
+      : 'background:#f3f4f6;color:#6b7280');  // grey = seed data
+  badge.textContent = usingReal ? '● Live Data' : '● Sample Data';
+  el.appendChild(badge);
+}
+
+// ─── Main function: rebuild the two live dashboard charts ───
+// Called every time collection data or demand-supply data changes.
+function refreshDashboardCharts() {
+  var cols = appState.collections;
+  var byDate = getCollectionByDate();
+  var hasRealDates = byDate.labels.length >= 1; // at least one real date entered
+
+  // ── Chart 1: Milk Collection Trend ──────────────────────────────────────
+  // If there is real data, show it. Otherwise fall back to the 30-day seed.
+  var collectLabels, collectData, collectUsingReal;
+  if (hasRealDates) {
+    collectLabels   = byDate.labels;
+    collectData     = byDate.totals;
+    collectUsingReal = true;
+  } else {
+    collectLabels   = DAYS30;
+    collectData     = COLLECT_SEED;
+    collectUsingReal = false;
+  }
+  makeChart('chartCollect', 'line', collectLabels, [{
+    label: 'Milk (L)',
+    data: collectData,
+    borderColor: '#1a56db',
+    backgroundColor: 'rgba(26,86,219,.08)',
+    fill: true,
+    tension: .4,
+    pointRadius: hasRealDates ? 4 : 2  // bigger dots on real data so they are visible
+  }]);
+  setChartDataLabel('chart-title-collect', collectUsingReal);
+
+  // ── Chart 2: Demand vs Supply (last 7 data points) ──────────────────────
+  // Supply bars come from real daily totals (last 7 dates).
+  // Demand bars come from appState.lastDemandSupply if set, otherwise seed.
+  var demandLabels, supplyData, demandData, demandUsingReal;
+  if (hasRealDates) {
+    // Use up to last 7 real dates
+    var last7dates  = byDate.labels.slice(-7);
+    var last7supply = byDate.totals.slice(-7);
+    // For demand: spread the stored demand figure evenly across those dates,
+    // or fall back to seed demand values
+    var demandPerDay = appState.lastDemandSupply
+      ? appState.lastDemandSupply.demand / 7   // divide total demand across 7 days
+      : null;
+    demandLabels    = last7dates.map(function(d){ return d.slice(5); }); // show MM-DD only
+    supplyData      = last7supply;
+    demandData      = last7dates.map(function(){ return demandPerDay ? Math.round(demandPerDay) : null; });
+    demandUsingReal = true;
+  } else {
+    demandLabels    = DAYS30.slice(-7);
+    supplyData      = COLLECT_SEED.slice(-7);
+    demandData      = DEMAND_SEED.slice(-7);
+    demandUsingReal = false;
+  }
+  // Build datasets; if demand data is all null, only show supply bars
+  var demandDatasets = [{
+    label: 'Supply (L)',
+    data: supplyData,
+    backgroundColor: 'rgba(26,86,219,.7)',
+    borderRadius: 4
+  }];
+  if (demandData.some(function(v){ return v !== null; })) {
+    demandDatasets.push({
+      label: 'Demand (L)',
+      data: demandData,
+      backgroundColor: 'rgba(5,122,85,.7)',
+      borderRadius: 4
+    });
+  }
+  makeChart('chartDemand', 'bar', demandLabels, demandDatasets, {legend: true});
+  setChartDataLabel('chart-title-demand', demandUsingReal);
+
+  // ── Chart 3: Transport Cost ──────────────────────────────────────────────
+  // If a route has been optimised, highlight its cost in the bar chart.
+  var transLabels = TRANSPORT_W.slice();
+  var transData   = TRANSPORT_D.slice();
+  var transReal   = false;
+  if (appState.lastRoute) {
+    // Replace the most recent week bar with the actual optimised cost
+    transLabels[3] = 'Latest Run';
+    transData[3]   = appState.lastRoute.cost;
+    transReal      = true;
+  }
+  makeChart('chartTransport', 'bar', transLabels, [{
+    label: '₹',
+    data: transData,
+    backgroundColor: ['rgba(26,86,219,.7)','rgba(5,122,85,.7)','rgba(108,43,217,.7)',
+      transReal ? 'rgba(224,36,36,.85)' : 'rgba(224,36,36,.7)'],
+    borderRadius: 6
+  }]);
+  setChartDataLabel('chart-title-transport', transReal);
+}
+
+// ═══════════════════════════════════════════════════════
+// AI FORECAST — CHART + INSIGHT RENDERER
+// ═══════════════════════════════════════════════════════
+
+// refreshForecastChart()
+// ─────────────────────
+// WHAT IT DOES: Reads appState.collections, runs the forecast math,
+// draws the chartForecast canvas, and updates the forecast-insight div.
+//
+// Chart visual design:
+//   Blue solid line  = actual collection data (what really happened)
+//   Purple dashed line = AI forecast (what the model predicts next)
+//
+// This function is called every time collection data changes so the
+// forecast always reflects the latest data entered by the user.
+function refreshForecastChart() {
+  try {
+    var byDate = getCollectionByDate();
+    var result = buildForecastPoints(byDate, 7); // 7-day forecast horizon
+
+    // Update the insight text card below the chart
+    var insightEl = document.getElementById('forecast-insight');
+    if (insightEl) insightEl.innerHTML = getForecastInsight(result);
+
+    // ── Case: no real data → draw seed chart with grey badge ──────────────
+    if (result.status === 'no-data') {
+      makeChart('chartForecast', 'line', DAYS30, [{
+        label: 'Sample Trend (L)',
+        data: COLLECT_SEED,
+        borderColor: '#1a56db',
+        backgroundColor: 'rgba(26,86,219,.07)',
+        fill: true,
+        tension: .4,
+        pointRadius: 2
+      }]);
+      setChartDataLabel('forecast-title', false);
+      return;
+    }
+
+    // ── Case: insufficient data → draw actual points only ─────────────────
+    if (result.status === 'insufficient') {
+      makeChart('chartForecast', 'line', result.actualLabels, [{
+        label: 'Actual (L)',
+        data: result.actualValues,
+        borderColor: '#1a56db',
+        backgroundColor: 'rgba(26,86,219,.08)',
+        fill: true,
+        tension: .3,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]);
+      setChartDataLabel('forecast-title', true);
+      return;
+    }
+
+    // ── Cases: low-confidence or ok → draw actual + forecast lines ────────
+    // Both datasets share the same x-axis (actual dates + forecast dates).
+    // Each dataset uses null for the date range it does not own so Chart.js
+    // leaves a visual gap. The seam point (last actual = first forecast) is
+    // repeated in both arrays so the two lines connect at that point.
+
+    var allLabels = result.actualLabels.concat(result.forecastLabels);
+
+    // Actual data: real values for actual dates, then nulls for forecast dates
+    var actualPadded = result.actualValues.concat(
+      result.forecastLabels.map(function(){ return null; })
+    );
+
+    // Forecast data: nulls for actual dates, except the last actual point
+    // which is shared so the lines visually connect at the seam.
+    var lastActualValue = result.actualValues[result.actualValues.length - 1];
+    var forecastPadded = result.actualLabels.map(function(unused, i){
+      return i === result.actualLabels.length - 1 ? lastActualValue : null;
+    }).concat(result.forecastValues);
+
+    makeChart('chartForecast', 'line', allLabels, [
+      {
+        // Blue solid line — actual recorded data
+        label: 'Actual (L)',
+        data: actualPadded,
+        borderColor: '#1a56db',
+        backgroundColor: 'rgba(26,86,219,.08)',
+        fill: true,
+        tension: .3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        spanGaps: false
+      },
+      {
+        // Purple dashed line — AI 7-day forecast
+        label: 'AI Forecast (L)',
+        data: forecastPadded,
+        borderColor: '#6c2bd9',
+        backgroundColor: 'rgba(108,43,217,.06)',
+        fill: false,
+        tension: .3,
+        borderDash: [8, 4],
+        pointRadius: 4,
+        pointBorderWidth: 2,
+        pointBackgroundColor: '#6c2bd9',
+        pointHoverRadius: 7,
+        spanGaps: false
+      }
+    ], { legend: true });
+
+    setChartDataLabel('forecast-title', true);
+
+  } catch(err) {
+    // If anything goes wrong, show the error in the insight div so it is visible
+    var insightEl = document.getElementById('forecast-insight');
+    if (insightEl) {
+      insightEl.innerHTML = '<div class="alert alert-warning" style="margin:0"><i class="fa fa-triangle-exclamation"></i> Forecast chart error: ' + err.message + '. Please refresh the page.</div>';
+    }
+  }
+}
+
+// initDashboardCharts: called once on page load.
+// It draws the fodder chart (always seed) and then calls refreshDashboardCharts
+// and refreshForecastChart so they pick up any restored localStorage data.
+function initDashboardCharts() {
+  // Fodder chart stays on static seed data
+  makeChart('chartFodder','line',DAYS30,[{label:'₹/kg',data:FODDER_HIST,borderColor:'#c27803',backgroundColor:'rgba(194,120,3,.08)',fill:true,tension:.4,pointRadius:2}]);
+  // Build the two live charts (uses real data if available, seed otherwise)
+  refreshDashboardCharts();
+  // Build the forecast chart
+  refreshForecastChart();
+}
+function initFodderChart() {
+  makeChart('chartFodderDetail','line',DAYS30,[{label:'₹/kg',data:FODDER_HIST,borderColor:'#c27803',backgroundColor:'rgba(194,120,3,.1)',fill:true,tension:.4,pointRadius:2}]);
+}
+function initDemandChart() {
+  makeChart('chartDemandDetail','line',DAYS30,[{label:'Supply (L)',data:COLLECT_SEED,borderColor:'#1a56db',fill:false,tension:.4,pointRadius:2},{label:'Demand (L)',data:DEMAND_SEED,borderColor:'#c27803',fill:false,tension:.4,pointRadius:2}],{legend:true});
+}
+
+// ═══════════════════════════════════════════════════════
+// MILK COLLECTION
+// ═══════════════════════════════════════════════════════
+function addCollection() {
+  var name  = strVal('cf-name');
+  var fid   = strVal('cf-id');
+  var qty   = numVal('cf-qty', 0.1, 2000);
+  var fat   = numVal('cf-fat', 0, 12);
+  var snf   = numVal('cf-snf', 0, 15);
+  var rate  = numVal('cf-rate', 0.1) || 27;
+  var date  = document.getElementById('cf-date').value || new Date().toISOString().slice(0,10);
+  var center= document.getElementById('cf-center').value;
+  var shift = document.getElementById('cf-shift').value;
+
+  var ok = true;
+  fieldErr('fg-cfname', !name); if (!name) ok=false;
+  fieldErr('fg-cfid', !fid); if (!fid) ok=false;
+  fieldErr('fg-cfqty', qty===null); if (qty===null) ok=false;
+  fieldErr('fg-cffat', fat===null); if (fat===null) ok=false;
+  fieldErr('fg-cfsnf', snf===null); if (snf===null) ok=false;
+  if (!ok) { toast('Please fix validation errors', 'err'); return; }
+
+  // Calculate estimated milk value
+  var qualBonus = 0;
+  if (fat >= 4.5) qualBonus = qty * 1.5;
+  else if (fat >= 4.0) qualBonus = qty * 0.75;
+  var estValue = qty * rate + qualBonus;
+
+  var rec = {
+    rid: Date.now(),
+    id: fid, name: name, center: center, shift: shift,
+    qty: qty, fat: fat, snf: snf, rate: rate,
+    estValue: Math.round(estValue), date: date
+  };
+  appState.collections.push(rec);
+  saveToStorage();
+  renderCollectionTable();
+  updateDashboardKPIs();
+  refreshCollectionSummary();
+  refreshDashboardCharts();           // ← update charts with new real data
+  refreshForecastChart();             // ← update forecast with new collection point
+  addActivity('Collection added: '+name+' — '+qty+' L (Est. ₹'+fmt(Math.round(estValue))+')');
+  generateAutoAlerts();
+
+  // Show success result
+  document.getElementById('cf-result').innerHTML =
+    '<div class="result-box" style="border-color:var(--success);background:var(--success-light)">' +
+    '<div style="font-weight:700;color:var(--success);margin-bottom:8px">✅ Collection Added Successfully</div>' +
+    '<div class="result-row"><span class="result-label">Farmer</span><span>'+name+' ('+fid+')</span></div>' +
+    '<div class="result-row"><span class="result-label">Quantity</span><span>'+qty+' L</span></div>' +
+    '<div class="result-row"><span class="result-label">Fat / SNF</span><span>'+fat+'% / '+snf+'%</span></div>' +
+    '<div class="result-row"><span class="result-label">Base Value ('+qty+' × ₹'+rate+')</span><span>'+fmtR(qty*rate)+'</span></div>' +
+    (qualBonus>0?'<div class="result-row"><span class="result-label">Quality Bonus (Fat ≥ '+fat+'%)</span><span style="color:var(--success)">+'+fmtR(qualBonus)+'</span></div>':'')+
+    '<div class="result-row"><span class="result-label">Estimated Value</span><span style="color:var(--primary);font-size:15px;font-weight:800">'+fmtR(estValue)+'</span></div></div>';
+
+  toast('Collection added for '+name+' — '+qty+' L', 'ok');
+}
+
+function renderCollectionTable() {
+  var tbody = document.getElementById('col-tbody');
+  if (!tbody) return;
+  var q = (document.getElementById('col-search').value||'').toLowerCase();
+  var list = q ? appState.collections.filter(function(r){ return r.name.toLowerCase().includes(q)||r.id.toLowerCase().includes(q); }) : appState.collections;
+  if (!list.length) { tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:20px">No records yet. Add a collection above.</td></tr>'; return; }
+  tbody.innerHTML = list.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+r.id+'</td><td>'+r.center+'</td><td>'+r.shift+'</td>' +
+      '<td><strong>'+r.qty+'</strong></td><td>'+r.fat+'%</td><td>'+r.snf+'%</td><td>₹'+r.rate+'</td>' +
+      '<td style="color:var(--success);font-weight:600">'+fmtR(r.estValue)+'</td><td>'+r.date+'</td></tr>';
+  }).join('');
+}
+function filterCollectionTable() { renderCollectionTable(); }
+function clearCollectionRecords() { if(!confirm('Clear all collection records?')) return; appState.collections=[]; saveToStorage(); renderCollectionTable(); updateDashboardKPIs(); refreshCollectionSummary(); refreshDashboardCharts(); refreshForecastChart(); toast('Collection records cleared','warn'); }
+
+function refreshCollectionSummary() {
+  var cols = appState.collections;
+  var total = cols.reduce(function(s,r){ return s+r.qty; }, 0);
+  var avgFat = cols.length ? (cols.reduce(function(s,r){ return s+r.fat; },0)/cols.length).toFixed(2) : null;
+  var el = document.getElementById('sum-total'); if(el) el.textContent = fmt(total)+' L';
+  var fe = document.getElementById('sum-fat'); if(fe) fe.textContent = avgFat ? avgFat+'%' : '—';
+  var re = document.getElementById('sum-records'); if(re) re.textContent = cols.length;
+  // Village chart
+  var vmap = {};
+  cols.forEach(function(r){ vmap[r.center]=(vmap[r.center]||0)+r.qty; });
+  var vk = Object.keys(vmap);
+  if (vk.length) {
+    makeChart('chartVillage','doughnut',vk,[{data:vk.map(function(k){return vmap[k];}),backgroundColor:['#1a56db','#057a55','#c27803','#6c2bd9','#e02424'],borderWidth:2}],{legend:true});
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD KPI UPDATE
+// ═══════════════════════════════════════════════════════
+function updateDashboardKPIs() {
+  var cols = appState.collections;
+  var totalMilk = cols.reduce(function(s,r){ return s+r.qty; },0);
+  var uniqueFarmers = new Set(cols.map(function(r){ return r.id; })).size;
+  var totalPayEst = cols.reduce(function(s,r){ return s+r.estValue; },0);
+  var m=document.getElementById('kpi-milk'); if(m) m.textContent=fmt(totalMilk)+' L';
+  var ms=document.getElementById('kpi-milk-sub'); if(ms) ms.textContent=cols.length+' entries';
+  var f=document.getElementById('kpi-farmers'); if(f) f.textContent=uniqueFarmers;
+  var p=document.getElementById('kpi-payments'); if(p) p.textContent=fmtR(totalPayEst);
+  var avgFat = cols.length ? cols.reduce(function(s,r){ return s+r.fat; },0)/cols.length : 0;
+  var eff = cols.length ? Math.min(100, Math.round(50 + avgFat*8 + Math.min(uniqueFarmers*2,20))) : 0;
+  var ef=document.getElementById('kpi-eff'); if(ef) ef.textContent=cols.length?eff+'%':'—';
+  if (appState.lastDemandSupply) {
+    var ds=appState.lastDemandSupply, gap=ds.supply-ds.demand;
+    var gEl=document.getElementById('kpi-gap'); if(gEl){ gEl.textContent=(gap>=0?'+':'')+fmt(gap)+' L'; gEl.style.color=gap>=0?'var(--success)':'var(--danger)'; }
+    var gsEl=document.getElementById('kpi-gap-sub'); if(gsEl) gsEl.textContent=gap>=0?'✅ Surplus':'🔴 Deficit';
+    var dEl=document.getElementById('kpi-demand'); if(dEl) dEl.textContent=fmt(ds.demand)+' L';
+  }
+  if (appState.lastRoute) { var rt=document.getElementById('kpi-transport'); if(rt) rt.textContent=fmtR(appState.lastRoute.cost); }
+  if (appState.lastFodder) {
+    var fo=appState.lastFodder;
+    var foEl=document.getElementById('kpi-fodder'); if(foEl) foEl.textContent=fo.remaining>=0?fmt(fo.remaining)+' kg':'⚠️ '+fmt(Math.abs(fo.remaining))+'kg short';
+    var foSb=document.getElementById('kpi-fodder-sub'); if(foSb) foSb.textContent=fo.remaining>=0?'✅ Sufficient':'🔴 Shortage';
+  }
+  generateDashboardAI();
+}
+
+function generateDashboardAI() {
+  var recs=[], cols=appState.collections;
+  if (!cols.length) { recs.push({icon:'📊',tag:'Getting Started',txt:'Add milk collection or click <strong>Start Demo</strong> to load sample data.'}); }
+  else {
+    var avgFat=cols.reduce(function(s,r){ return s+r.fat; },0)/cols.length;
+    if (avgFat<4.0) recs.push({icon:'⚠️',tag:'Quality Alert',txt:'Average fat% is <strong>'+avgFat.toFixed(2)+'%</strong> — below 4.0% target. <em>Why: low fat reduces milk price.</em>'});
+    else recs.push({icon:'✅',tag:'Quality Good',txt:'Average fat% is <strong>'+avgFat.toFixed(2)+'%</strong> — above target. Quality bonuses applicable.'});
+  }
+  if (appState.lastDemandSupply) {
+    var ds=appState.lastDemandSupply, gap=ds.supply-ds.demand;
+    if (gap>500) recs.push({icon:'🥛',tag:'Surplus Alert',txt:'Milk surplus of <strong>'+fmt(gap)+' L</strong>. <em>Action:</em> Contact bulk buyers or divert to processing. <em>Why: unused milk will spoil.</em>'});
+    else if (gap<-200) recs.push({icon:'🚨',tag:'Deficit Alert',txt:'Milk deficit of <strong>'+fmt(Math.abs(gap))+' L</strong>. <em>Action:</em> Increase procurement. <em>Why: unmet demand risks losing customers.</em>'});
+  }
+  if (appState.lastFodder && appState.lastFodder.remaining<0) recs.push({icon:'🌾',tag:'Fodder Shortage',txt:'Shortage of <strong>'+fmt(Math.abs(appState.lastFodder.remaining))+' kg</strong> predicted. Purchase <strong>'+fmt(appState.lastFodder.recommended)+' kg</strong> now.'});
+  if (appState.lastRoute && appState.lastRoute.saving>500) recs.push({icon:'🚚',tag:'Route Savings',txt:'Route optimizer found potential savings of <strong>'+fmtR(appState.lastRoute.saving)+'</strong>/day.'});
+  var el=document.getElementById('dash-ai-recs');
+  if (!el) return;
+  if (!recs.length) { el.innerHTML='<div class="ai-card"><div class="ai-card-header">✅ All Clear <span class="ai-tag">AI Engine</span></div><p>No critical issues detected.</p></div>'; return; }
+  el.innerHTML=recs.map(function(r){ return '<div class="ai-card"><div class="ai-card-header">'+r.icon+' '+r.tag+' <span class="ai-tag">AI Engine</span></div><p>'+r.txt+'</p></div>'; }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTO ALERTS FROM DATA
+// ═══════════════════════════════════════════════════════
+function generateAutoAlerts() {
+  var cols=appState.collections, total=cols.reduce(function(s,r){ return s+r.qty; },0);
+  if (cols.length===1) addAlert('info','🔵','First Collection Logged',cols[0].name+' logged '+cols[0].qty+' L. Dashboard updated.');
+  if (total>2000) addAlert('info','🔵','Collection Milestone','Total collection reached '+fmt(total)+' L today.');
+  var avgFat = cols.length?cols.reduce(function(s,r){ return s+r.fat; },0)/cols.length:0;
+  if (cols.length>2 && avgFat<3.8) addAlert('high','🔴','Low Fat Quality Alert','Average fat% is '+avgFat.toFixed(2)+'% — well below 4.0% standard. Immediate quality check recommended.');
+}
+
+// ═══════════════════════════════════════════════════════
+// FARMER RECORDS
+// ═══════════════════════════════════════════════════════
+function renderFarmerTable() {
+  var tbody=document.getElementById('farmer-tbody'); if(!tbody) return;
+  var q=(document.getElementById('farmer-search').value||'').toLowerCase();
+  var cf=document.getElementById('farmer-filter').value;
+  var map={};
+  appState.collections.forEach(function(r){
+    if(!map[r.id]) map[r.id]={id:r.id,name:r.name,center:r.center,qty:0,fatSum:0,snfSum:0,cnt:0,estPay:0};
+    map[r.id].qty+=r.qty; map[r.id].fatSum+=r.fat; map[r.id].snfSum+=r.snf; map[r.id].cnt++; map[r.id].estPay+=r.estValue;
+  });
+  var list=Object.values(map);
+  if(q) list=list.filter(function(r){ return r.name.toLowerCase().includes(q)||r.id.toLowerCase().includes(q); });
+  if(cf) list=list.filter(function(r){ return r.center===cf; });
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No records. Add collections first.</td></tr>'; return; }
+  tbody.innerHTML=list.map(function(r){
+    var af=(r.fatSum/r.cnt).toFixed(2), as2=(r.snfSum/r.cnt).toFixed(2);
+    var sc=r.qty>100?'badge-green':r.qty>50?'badge-blue':'badge-yellow', st=r.qty>100?'Active':r.qty>50?'Regular':'Low';
+    return '<tr><td><strong>'+r.id+'</strong></td><td>'+r.name+'</td><td><strong>'+fmt(r.qty)+'</strong></td><td>'+af+'%</td><td>'+as2+'%</td><td style="color:var(--success);font-weight:600">'+fmtR(r.estPay)+'</td><td>'+r.center+'</td><td><span class="badge '+sc+'">'+st+'</span></td></tr>';
+  }).join('');
+}
+function filterFarmerTable() { renderFarmerTable(); }
+
+// ═══════════════════════════════════════════════════════
+// FARMER PAYMENT CALCULATOR
+// ═══════════════════════════════════════════════════════
+function calculatePayment() {
+  var name=(document.getElementById('pay-name').value||'').trim()||'Farmer';
+  var period=document.getElementById('pay-period').value;
+  var qty=numVal('pay-qty',0.1), rate=numVal('pay-rate',0.1);
+  var fat=numVal('pay-fat',0,12)||4.0, snf=numVal('pay-snf',0,15)||8.5;
+  var bonus=numVal('pay-bonus',0)||0, deduct=numVal('pay-deduct',0)||0;
+  var ok=true;
+  fieldErr('fg-payqty',qty===null); if(qty===null) ok=false;
+  fieldErr('fg-payrate',rate===null); if(rate===null) ok=false;
+  if(!ok){ toast('Please fix validation errors','err'); return; }
+  var fatBonus=fat>=4.5?qty*2:fat>=4.2?qty*1:fat>=4.0?qty*0.5:0;
+  var gross=qty*rate, totalBonus=bonus+fatBonus, net=gross+totalBonus-deduct;
+  var auditHash=btoa(name+qty+rate+bonus+deduct).substring(0,20);
+  var html='<div class="result-box"><div style="font-weight:700;font-size:14px;margin-bottom:10px">💰 Payment Breakdown — '+name+'</div>'+
+    '<div class="result-row"><span class="result-label">Milk Quantity</span><span>'+qty+' L</span></div>'+
+    '<div class="result-row"><span class="result-label">Base Amount ('+qty+' × ₹'+rate+')</span><span>'+fmtR(gross)+'</span></div>'+
+    (fatBonus>0?'<div class="result-row"><span class="result-label">Fat Quality Bonus (Fat: '+fat+'%)</span><span style="color:var(--success)">+ '+fmtR(fatBonus)+'</span></div>':'')+
+    (bonus>0?'<div class="result-row"><span class="result-label">Additional Bonus</span><span style="color:var(--success)">+ '+fmtR(bonus)+'</span></div>':'')+
+    (deduct>0?'<div class="result-row"><span class="result-label">Deductions</span><span style="color:var(--danger)">− '+fmtR(deduct)+'</span></div>':'')+
+    '<div class="result-row"><span class="result-label">Net Payment</span><span style="color:var(--primary);font-size:16px;font-weight:800">'+fmtR(net)+'</span></div></div>'+
+    '<div class="ai-card" style="margin-top:10px"><div class="ai-card-header">🤖 How was this calculated? <span class="ai-tag">Payment Engine</span></div>'+
+    '<p><strong>'+name+'</strong> supplied '+qty+' L at ₹'+rate+'/L → Gross: '+fmtR(gross)+'. '+
+    (fatBonus>0?'Fat '+fat+'% earns quality bonus of '+fmtR(fatBonus)+'. ':'')+
+    (deduct>0?'Deduction of '+fmtR(deduct)+' applied. ':'')+
+    '<strong>Net: '+fmtR(net)+'.</strong> Audit ID: <code style="font-size:10px">PAY-'+auditHash.substring(0,8)+'</code></p></div>';
+  document.getElementById('pay-result').innerHTML=html;
+  appState.payments.unshift({name:name,period:period,qty:qty,rate:rate,fat:fat,gross:gross,bonus:totalBonus,deduct:deduct,net:net,status:'Pending'});
+  saveToStorage(); renderPaymentHistory(); refreshPaymentChart(); updateDashboardKPIs();
+  addActivity('Payment calculated: '+name+' — '+fmtR(net));
+  addAlert('ok','✅','Payment Calculated',name+' payment: '+fmtR(net)+' for '+period+'. Audit: PAY-'+auditHash.substring(0,8));
+  toast('Payment: '+fmtR(net)+' for '+name,'ok');
+}
+function renderPaymentHistory() {
+  var tbody=document.getElementById('pay-tbody'); if(!tbody) return;
+  var list=appState.payments.slice(0,15);
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No payment records yet.</td></tr>'; return; }
+  tbody.innerHTML=list.map(function(p){
+    return '<tr><td><strong>'+p.name+'</strong></td><td>'+p.period+'</td><td>'+p.qty+'L</td><td>'+fmtR(p.gross)+'</td><td style="color:var(--success)">+'+fmtR(p.bonus)+'</td><td style="color:var(--danger)">-'+fmtR(p.deduct)+'</td><td style="font-weight:700">'+fmtR(p.net)+'</td><td><span class="badge badge-'+(p.status==='Paid'?'green':'yellow')+'">'+p.status+'</span></td></tr>';
+  }).join('');
+}
+function refreshPaymentChart() {
+  if(!appState.payments.length) return;
+  var last8=appState.payments.slice(0,8).reverse();
+  makeChart('chartPayments','bar',last8.map(function(p){ return p.name.split(' ')[0]; }),[{label:'Net Payment (₹)',data:last8.map(function(p){ return p.net; }),backgroundColor:'rgba(26,86,219,.7)',borderRadius:6}]);
+}
+
+// ═══════════════════════════════════════════════════════
+// DEMAND VS SUPPLY
+// ═══════════════════════════════════════════════════════
+function calculateDemandSupply() {
+  var supply=numVal('ds-supply',0), demand=numVal('ds-demand',0), storage=numVal('ds-storage',0)||0;
+  var ok=true;
+  fieldErr('fg-ds-supply',supply===null); if(supply===null) ok=false;
+  fieldErr('fg-ds-demand',demand===null); if(demand===null) ok=false;
+  if(!ok){ toast('Please fix validation errors','err'); return; }
+  var gap=supply-demand, pct=demand>0?((gap/demand)*100).toFixed(1):0;
+  var status=gap>0?'SURPLUS':gap<0?'DEFICIT':'BALANCED';
+  appState.lastDemandSupply={supply:supply,demand:demand,storage:storage,gap:gap,status:status};
+  saveToStorage();
+  var banner=document.getElementById('ds-banner');
+  if(banner){
+    if(gap>0){ banner.className='alert alert-success'; banner.innerHTML='✅ <strong>Status: SURPLUS</strong> — Supply exceeds demand by '+fmt(gap)+' L ('+pct+'%).'; }
+    else if(gap<0){ banner.className='alert alert-danger'; banner.innerHTML='🚨 <strong>Status: DEFICIT</strong> — Demand exceeds supply by '+fmt(Math.abs(gap))+' L.'; }
+    else{ banner.className='alert alert-info'; banner.innerHTML='⚖️ <strong>Status: BALANCED</strong> — Supply perfectly matches demand.'; }
+  }
+  var recTxt=gap>500?'🥛 Surplus of '+fmt(gap)+' L. <strong>Action:</strong> Contact bulk buyers (Est. '+fmtR(gap*24)+' revenue). <em>Why: milk spoils without storage.</em>':
+    gap>0?'✅ Small surplus. Monitor and sell locally.':
+    gap<-500?'🚨 Serious deficit of '+fmt(Math.abs(gap))+' L. <strong>Action:</strong> Contact farmers for extra collection. <em>Why: unmet demand risks losing contracts.</em>':
+    gap<0?'⚠️ Small deficit. Ask farmers for extra evening collection.':'✅ Perfect balance.';
+  document.getElementById('ds-result').innerHTML='<div class="result-box">'+
+    '<div class="result-row"><span class="result-label">Available Supply</span><span style="color:var(--primary);font-weight:700">'+fmt(supply)+' L</span></div>'+
+    '<div class="result-row"><span class="result-label">Customer Demand</span><span style="color:var(--warning);font-weight:700">'+fmt(demand)+' L</span></div>'+
+    (storage>0?'<div class="result-row"><span class="result-label">Storage Capacity</span><span>'+fmt(storage)+' L</span></div>':'')+
+    '<div class="result-row"><span class="result-label">Gap (Supply − Demand)</span><span style="color:'+(gap>=0?'var(--success)':'var(--danger)')+';font-size:16px;font-weight:800">'+(gap>=0?'+':'')+fmt(gap)+' L</span></div></div>'+
+    '<div class="ai-card" style="margin-top:10px"><div class="ai-card-header">🤖 AI Recommendation — '+status+' <span class="ai-tag">Demand Agent</span></div><p>'+recTxt+'</p></div>';
+  var cPct=[0.435,0.343,0.222], cIDs=[['dc-a-s','dc-a-d','dc-a-g','dc-a-st'],['dc-n-s','dc-n-d','dc-n-g','dc-n-st'],['dc-k-s','dc-k-d','dc-k-g','dc-k-st']];
+  cPct.forEach(function(p,i){
+    var cs=Math.round(supply*p),cd=Math.round(demand*p),cg=cs-cd;
+    var set=function(id,v){ var el=document.getElementById(id); if(el) el.innerHTML=v; };
+    set(cIDs[i][0],fmt(cs)+' L'); set(cIDs[i][1],fmt(cd)+' L'); set(cIDs[i][2],(cg>=0?'+':'')+fmt(cg)+' L');
+    set(cIDs[i][3],'<span class="badge badge-'+(cg>0?'green':cg<0?'red':'blue')+'">'+(cg>0?'Surplus':cg<0?'Deficit':'Balanced')+'</span>');
+  });
+  var aiRecs=document.getElementById('ds-ai-recs');
+  if(aiRecs) aiRecs.innerHTML='<div class="ai-card"><div class="ai-card-header">📅 7-Day Outlook <span class="ai-tag">Demand Agent</span></div><p>'+(gap>0?'Surplus trend may continue. Consider forward contracts with processors.':'Deficit situation may worsen. Recommend farmer incentive scheme (+₹0.50/L for 7 days).')+'</p></div>';
+  updateDashboardKPIs();
+  addActivity('Demand-Supply: Supply='+fmt(supply)+'L, Demand='+fmt(demand)+'L → '+status+' '+fmt(Math.abs(gap))+'L');
+  if(gap<-500) addAlert('high','🚨','Milk Deficit Detected','Supply ('+fmt(supply)+'L) is '+fmt(Math.abs(gap))+'L below demand ('+fmt(demand)+'L). Increase procurement immediately.');
+  else if(gap>1000) addAlert('medium','🥛','Milk Surplus Detected','Surplus of '+fmt(gap)+'L. Redirect to processing or bulk buyers.');
+  else addAlert('ok','✅','Demand-Supply Analysed',status+'. Gap: '+(gap>=0?'+':'')+fmt(gap)+'L.');
+  refreshDashboardCharts();           // ← demand bars now reflect entered demand value
+  toast('Analysis: '+status+' of '+fmt(Math.abs(gap))+' L',gap>=0?'ok':'warn');
+}
+
+// ═══════════════════════════════════════════════════════
+// ROUTE OPTIMIZATION
+// ═══════════════════════════════════════════════════════
+function optimizeRoute() {
+  var centers=numVal('r-centers',1,20), dist=numVal('r-dist',0.1), qty=numVal('r-qty',1);
+  var vehicles=numVal('r-vehicles',1,50), fuel=numVal('r-fuel',1), cap=numVal('r-cap',50)||500;
+  var ok=true;
+  fieldErr('fg-r-centers',centers===null); if(centers===null) ok=false;
+  fieldErr('fg-r-dist',dist===null); if(dist===null) ok=false;
+  fieldErr('fg-r-qty',qty===null); if(qty===null) ok=false;
+  fieldErr('fg-r-vehicles',vehicles===null); if(vehicles===null) ok=false;
+  fieldErr('fg-r-fuel',fuel===null); if(fuel===null) ok=false;
+  if(!ok){ toast('Please fix validation errors','err'); return; }
+  var btn=document.querySelector('#page-route .btn-primary');
+  if(btn){ btn.textContent='⏳ Optimizing…'; btn.disabled=true; }
+  setTimeout(function(){
+    var farms=[{name:'Ramesh Patel',dist:2.1,qty:45},{name:'Dinesh Rao',dist:3.1,qty:30},{name:'Suresh Desai',dist:4.8,qty:38},{name:'Bhavesh Joshi',dist:5.3,qty:41},{name:'Priya Patel',dist:6.8,qty:33},{name:'Manubhai Shah',dist:7.2,qty:52},{name:'Kiran Modi',dist:9.5,qty:67},{name:'Nilesh Solanki',dist:10.1,qty:49},{name:'Harish Kumar',dist:11.2,qty:55},{name:'Vijay Chauhan',dist:12.4,qty:70}];
+    var sorted=farms.slice().sort(function(a,b){ return a.dist-b.dist; });
+    var scaleFactor=(dist*centers)/sorted.reduce(function(s,f){ return s+f.dist; },0);
+    var totalDistUnopt=sorted.reduce(function(s,f){ return s+f.dist*scaleFactor; },0)*2;
+    var totalDistOpt=totalDistUnopt*0.876, fuelUsed=totalDistOpt*0.12;
+    var fuelCost=fuelUsed*fuel, transportCost=fuelCost*vehicles, saving=(totalDistUnopt-totalDistOpt)*0.12*fuel*vehicles;
+    var timeMin=Math.round(totalDistOpt/35*60+sorted.length*5);
+    var effScore=Math.min(100,Math.round(85+(cap-qty/vehicles)/cap*10));
+    appState.lastRoute={cost:Math.round(transportCost),saving:Math.round(saving),efficiency:effScore};
+    saveToStorage(); updateDashboardKPIs();
+    var stopsHtml=sorted.slice(0,Math.min(centers,sorted.length)).map(function(f,i){
+      return '<div class="route-stop"><div class="stop-num">'+(i+1)+'</div><div style="flex:1"><div class="stop-name">'+f.name+'</div><div class="stop-meta">📍 '+(f.dist*scaleFactor).toFixed(1)+' km | 🥛 '+f.qty+' L</div></div></div>';
+    }).join('');
+    document.getElementById('route-result').innerHTML='<div class="result-box"><div style="font-weight:700;font-size:13px;margin-bottom:10px">🚀 Optimized Route (Demo AI)</div>'+stopsHtml+
+      '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">'+
+      '<div class="result-row"><span class="result-label">Optimized Distance</span><span>'+totalDistOpt.toFixed(1)+' km (round trip)</span></div>'+
+      '<div class="result-row"><span class="result-label">Fuel Used</span><span>'+(fuelUsed*vehicles).toFixed(1)+' L</span></div>'+
+      '<div class="result-row"><span class="result-label">Transport Cost</span><span>'+fmtR(transportCost)+'</span></div>'+
+      '<div class="result-row"><span class="result-label">Travel Time</span><span>'+timeMin+' minutes</span></div>'+
+      '<div class="result-row"><span class="result-label">Saving vs Unoptimized</span><span style="color:var(--success)">'+fmtR(saving)+' (12.4%)</span></div>'+
+      '<div class="result-row"><span class="result-label">Efficiency Score</span><span style="color:var(--primary);font-weight:800">'+effScore+'%</span></div></div>'+
+      '<div class="ai-card" style="margin-top:10px"><div class="ai-card-header">🤖 AI Recommendation <span class="ai-tag">Route Agent</span></div><p>Nearest-neighbor route visits '+Math.min(centers,10)+' stops in optimal distance order, saving <strong>'+fmtR(saving)+'</strong>/day vs unoptimized routing. <em>Why: shortest-first order minimizes total travel and fuel.</em></p></div>';
+    if(btn){ btn.textContent='▶ Run Route Optimization'; btn.disabled=false; }
+    refreshDashboardCharts();         // ← transport bar now shows real optimised cost
+    addActivity('Route optimized: '+vehicles+' vehicles, cost '+fmtR(Math.round(transportCost))+', saving '+fmtR(Math.round(saving)));
+    if(saving>500) addAlert('info','🚚','Route Saving Found','AI found savings of '+fmtR(Math.round(saving))+'/day via optimized routing.');
+    toast('Route optimized — saving '+fmtR(Math.round(saving))+'/day','ok');
+  },900);
+}
+
+// ═══════════════════════════════════════════════════════
+// FODDER FORECAST
+// ═══════════════════════════════════════════════════════
+function calculateFodder() {
+  var cattle=numVal('fo-cattle',1), stock=numVal('fo-stock',0), daily=numVal('fo-daily',0.01), days=numVal('fo-days',1,365);
+  var price=numVal('fo-price',0)||32, buffer=numVal('fo-buffer',0,50)||10;
+  var ok=true;
+  fieldErr('fg-fo-cattle',cattle===null); if(cattle===null) ok=false;
+  fieldErr('fg-fo-stock',stock===null); if(stock===null) ok=false;
+  fieldErr('fg-fo-daily',daily===null); if(daily===null) ok=false;
+  fieldErr('fg-fo-days',days===null); if(days===null) ok=false;
+  if(!ok){ toast('Please fix validation errors','err'); return; }
+  var dailyTotal=cattle*daily, expected=dailyTotal*days;
+  var remaining=stock-expected, bufferQty=Math.ceil(expected*buffer/100);
+  var shortage=remaining<0?Math.abs(remaining):0;
+  var recommended=shortage+bufferQty, purchaseCost=recommended*price;
+  var daysLeft=stock>0?Math.floor(stock/dailyTotal):0;
+  appState.lastFodder={remaining:remaining,recommended:recommended,shortage:shortage,cattle:cattle,daily:dailyTotal,days:days};
+  saveToStorage(); updateDashboardKPIs();
+  var statusCls=remaining>=0?'var(--success)':'var(--danger)', statusTxt=remaining>=0?'✅ SUFFICIENT':'🔴 SHORTAGE PREDICTED';
+  document.getElementById('fo-result').innerHTML='<div class="result-box">'+
+    '<div style="font-weight:700;font-size:13px;margin-bottom:10px">🌾 Fodder Forecast Results</div>'+
+    '<div class="result-row"><span class="result-label">Number of Cattle</span><span>'+cattle+'</span></div>'+
+    '<div class="result-row"><span class="result-label">Daily Consumption (Total)</span><span>'+dailyTotal.toFixed(1)+' kg/day</span></div>'+
+    '<div class="result-row"><span class="result-label">Forecast Period</span><span>'+days+' days</span></div>'+
+    '<div class="result-row"><span class="result-label">Expected Consumption</span><span>'+fmt(Math.round(expected))+' kg</span></div>'+
+    '<div class="result-row"><span class="result-label">Current Stock</span><span>'+fmt(stock)+' kg</span></div>'+
+    '<div class="result-row"><span class="result-label">Stock Lasts</span><span>'+daysLeft+' days</span></div>'+
+    (shortage>0?'<div class="result-row"><span class="result-label">Predicted Shortage</span><span style="color:var(--danger);font-weight:700">'+fmt(Math.round(shortage))+' kg</span></div>':'')+
+    (shortage>0?'<div class="result-row"><span class="result-label">Recommended Purchase (with '+buffer+'% buffer)</span><span style="color:var(--primary);font-weight:800">'+fmt(Math.round(recommended))+' kg</span></div>':'')+
+    (shortage>0?'<div class="result-row"><span class="result-label">Estimated Purchase Cost</span><span>'+fmtR(purchaseCost)+'</span></div>':'')+
+    '<div class="result-row"><span class="result-label">Status</span><span style="color:'+statusCls+';font-weight:800">'+statusTxt+'</span></div></div>'+
+    '<div class="ai-card" style="margin-top:10px"><div class="ai-card-header">🤖 AI Recommendation <span class="ai-tag">Fodder Agent</span></div><p>'+
+    (shortage>0?'Fodder shortage of <strong>'+fmt(Math.round(shortage))+' kg</strong> predicted in '+days+' days. <strong>Purchase approximately '+fmt(Math.round(recommended))+' kg</strong> (including '+buffer+'% safety buffer) at ₹'+price+'/kg = <strong>'+fmtR(purchaseCost)+'</strong>. <em>Why: running out of fodder reduces milk production by 15–20% per cattle.</em>':
+    'Fodder stock is <strong>sufficient for '+days+' days</strong>. Current stock of '+fmt(stock)+'kg will meet the expected demand of '+fmt(Math.round(expected))+'kg. Review before day '+daysLeft+' for the next procurement.')+'</p></div>';
+  addActivity('Fodder forecast: '+cattle+' cattle, '+days+' days — '+(shortage>0?'Shortage '+fmt(Math.round(shortage))+'kg':'Sufficient'));
+  if(shortage>0) addAlert('medium','🟠','Fodder Shortage Predicted',days+'-day forecast shows shortage of '+fmt(Math.round(shortage))+'kg. Purchase '+fmt(Math.round(recommended))+'kg recommended.');
+  else addAlert('ok','✅','Fodder Stock Sufficient','Current stock of '+fmt(stock)+'kg is sufficient for '+days+' days ('+cattle+' cattle).');
+  toast('Fodder forecast complete'+(shortage>0?' — shortage detected':''),shortage>0?'warn':'ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// WHAT-IF SIMULATOR
+// ═══════════════════════════════════════════════════════
+function runScenario() {
+  var milk=parseFloat(document.getElementById('wi-milk').value)||0;
+  var demand=parseFloat(document.getElementById('wi-demand').value)||0;
+  var farmers=parseInt(document.getElementById('wi-farmers').value)||1;
+  var vehicles=parseInt(document.getElementById('wi-vehicles').value)||1;
+  var fuel=parseFloat(document.getElementById('wi-fuel').value)||95;
+  var fodder=parseFloat(document.getElementById('wi-fodder').value)||0;
+  var dist=parseFloat(document.getElementById('wi-dist').value)||60;
+  var rate=parseFloat(document.getElementById('wi-rate').value)||27;
+  if(milk<0||demand<0||farmers<1||vehicles<1||fuel<1){ toast('Please enter valid positive values','err'); return; }
+  var gap=milk-demand;
+  var transportCost=Math.round(vehicles*dist*0.12*fuel*2);
+  var payEstimate=Math.round(milk*rate);
+  var fodderReq=Math.round(farmers*50*30);
+  var fodderStatus=fodder>=fodderReq?'Sufficient':'Shortage: '+fmt(fodderReq-fodder)+'kg needed';
+  var effScore=Math.min(100,Math.round(60+(gap>=0?15:0)+(milk>5000?10:5)+(farmers>=10?10:5)));
+  var riskLevel=gap<-2000||fodder<fodderReq*0.5?'high':gap<0||fodder<fodderReq?'med':'low';
+  var riskTxt=riskLevel==='high'?'🔴 HIGH':riskLevel==='med'?'🟡 MEDIUM':'🟢 LOW';
+  var gapTxt=gap>=0?'<span style="color:var(--success)">Surplus: +'+fmt(gap)+' L</span>':'<span style="color:var(--danger)">Deficit: '+fmt(Math.abs(gap))+' L</span>';
+  var recAction=gap>2000?'🥛 Large milk surplus — contact bulk buyers or divert to processing. <em>Why: surplus milk will spoil without storage or sale.</em>':
+    gap>0?'✅ Balanced scenario — minor surplus can be stored or sold locally.':
+    gap>-2000?'⚠️ Small milk deficit — increase farmer collection targets by '+(Math.ceil(Math.abs(gap)/farmers))+' L per farmer.':
+    '🚨 Serious deficit — emergency procurement needed from neighbouring cooperatives.';
+  appState.lastScenario={milk,demand,gap,transportCost,payEstimate,effScore,riskLevel};
+  saveToStorage();
+  document.getElementById('wi-output').innerHTML='<div style="padding:0"><div style="font-weight:700;font-size:15px;margin-bottom:14px">📊 Scenario Results</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--primary)">'+fmt(milk)+' L</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Milk Collection</div></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--warning)">'+fmt(demand)+' L</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Demand</div></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800">'+gapTxt+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Gap</div></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--purple)">'+fmtR(transportCost)+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Transport Cost</div></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--success)">'+fmtR(payEstimate)+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Payment Est.</div></div>'+
+    '<div style="background:#f9fafb;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:'+(effScore>=80?'var(--success)':effScore>=60?'var(--warning)':'var(--danger)')+'">'+effScore+'%</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase">Efficiency</div></div>'+
+    '</div>'+
+    '<div style="margin-bottom:10px"><span style="font-weight:600;margin-right:8px">Risk Level:</span><span class="risk-badge risk-'+riskLevel+'">'+riskTxt+'</span></div>'+
+    '<div style="background:#f0f4ff;border-radius:8px;padding:8px;font-size:11px;color:var(--muted);margin-bottom:10px">Fodder Requirement: '+fmt(fodderReq)+' kg | Status: '+fodderStatus+'</div>'+
+    '<div class="ai-card"><div class="ai-card-header">🤖 AI Recommended Action <span class="ai-tag">Scenario Engine</span></div><p>'+recAction+'</p></div>'+
+    '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="runScenario()"><i class="fa fa-rotate-right"></i> Run Again with New Values</button></div>';
+  addActivity('What-If scenario: Milk='+fmt(milk)+'L, Demand='+fmt(demand)+'L, Risk='+riskLevel.toUpperCase());
+  toast('Scenario complete — Risk: '+riskTxt, riskLevel==='high'?'err':riskLevel==='med'?'warn':'ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════════════════
+function refreshAnalytics() {
+  var cols=appState.collections;
+  var total=cols.reduce(function(s,r){ return s+r.qty; },0);
+  var unique=new Set(cols.map(function(r){ return r.id; })).size;
+  var payTotal=appState.payments.reduce(function(s,p){ return s+p.net; },0);
+  var avgFat=cols.length?cols.reduce(function(s,r){ return s+r.fat; },0)/cols.length:0;
+  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('an-monthly',fmt(total)+' L'); set('an-farmers',unique);
+  set('an-payouts',fmtR(payTotal)); set('an-fat',cols.length?avgFat.toFixed(2)+'%':'—');
+  // Village bar
+  var vmap={};
+  cols.forEach(function(r){ vmap[r.center]=(vmap[r.center]||0)+r.qty; });
+  var vk=Object.keys(vmap);
+  if(vk.length) makeChart('chartVillageBar','bar',vk,[{label:'Collection (L)',data:vk.map(function(k){ return vmap[k]; }),backgroundColor:['#1a56db','#057a55','#c27803','#6c2bd9','#e02424'],borderRadius:8}]);
+  // Performance chart
+  var perfData=COLLECT_SEED.map(function(v){ return v + (Math.random()*100-50); });
+  makeChart('chartPerf','line',DAYS30,[{label:'Collection (L)',data:perfData,borderColor:'#1a56db',backgroundColor:'rgba(26,86,219,.1)',fill:true,tension:.4,pointRadius:2},{label:'Target',data:Array(30).fill(2500),borderColor:'#e02424',borderDash:[5,5],pointRadius:0}],{legend:true});
+  // Ranking table
+  var tbody=document.getElementById('an-perf-tbody');
+  if(tbody){
+    var fmap={};
+    cols.forEach(function(r){ if(!fmap[r.id]) fmap[r.id]={name:r.name,qty:0,fatSum:0,cnt:0}; fmap[r.id].qty+=r.qty; fmap[r.id].fatSum+=r.fat; fmap[r.id].cnt++; });
+    var ranked=Object.values(fmap).sort(function(a,b){ return b.qty-a.qty; });
+    if(ranked.length){
+      tbody.innerHTML=ranked.slice(0,8).map(function(r,i){
+        var af=(r.fatSum/r.cnt).toFixed(2);
+        var score=Math.min(100,Math.round(50+r.qty/10+af*5));
+        var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+        return '<tr><td>'+medal+'</td><td><strong>'+r.name+'</strong></td><td>'+fmt(r.qty)+'</td><td>'+af+'%</td>' +
+          '<td><div style="display:flex;align-items:center;gap:6px"><div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:'+score+'%;background:'+(score>=80?'var(--success)':'var(--warning)')+'"></div></div>'+score+'</div></td></tr>';
+      }).join('');
+    } else { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Add collection records to see rankings.</td></tr>'; }
+  }
+  // AI insights
+  var aiEl=document.getElementById('an-ai-recs');
+  if(aiEl){
+    if(!cols.length){ aiEl.innerHTML='<div class="ai-card"><div class="ai-card-header">📊 No Data <span class="ai-tag">Analytics Engine</span></div><p>Add milk collection records or run demo to see insights.</p></div>'; return; }
+    var insights=[];
+    if(avgFat<4.0) insights.push({icon:'⚠️',h:'Quality Decline',t:'Average fat% is '+avgFat.toFixed(2)+'% — below 4.0% target. Arrange nutrition advisory for farmers within 7 days.'});
+    else insights.push({icon:'✅',h:'Good Quality',t:'Average fat% is '+avgFat.toFixed(2)+'% — above target. Maintain current feeding practices.'});
+    insights.push({icon:'📈',h:'Collection Summary',t:unique+' unique farmers contributed '+fmt(total)+'L total. Average per farmer: '+fmt(Math.round(total/Math.max(unique,1)))+'L.'});
+    if(payTotal>0) insights.push({icon:'💰',h:'Payment Summary',t:'Total payments processed: '+fmtR(payTotal)+' across '+appState.payments.length+' transactions.'});
+    aiEl.innerHTML=insights.map(function(r){ return '<div class="ai-card"><div class="ai-card-header">'+r.icon+' '+r.h+' <span class="ai-tag">Analytics Engine</span></div><p>'+r.t+'</p></div>'; }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// AI ASSISTANT
+// ═══════════════════════════════════════════════════════
+function refreshAISituation() {
+  var el=document.getElementById('ai-situation');
+  if(!el) return;
+  var cols=appState.collections;
+  var total=cols.reduce(function(s,r){ return s+r.qty; },0);
+  var ds=appState.lastDemandSupply;
+  var situation=[
+    {label:'Milk Collected',value:cols.length?fmt(total)+' L ('+cols.length+' entries)':'No data'},
+    {label:'Demand-Supply',value:ds?((ds.gap>=0?'SURPLUS +':' DEFICIT ')+fmt(Math.abs(ds.gap))+'L'):'Not analysed'},
+    {label:'Fodder',value:appState.lastFodder?(appState.lastFodder.remaining>=0?'✅ Sufficient':'⚠️ Shortage predicted'):'Not forecasted'},
+    {label:'Transport',value:appState.lastRoute?fmtR(appState.lastRoute.cost)+' (last run)':'Not optimized'},
+    {label:'Payments',value:appState.payments.length?appState.payments.length+' records, est. '+fmtR(appState.payments.reduce(function(s,p){ return s+p.net; },0)):'None'},
+    {label:'Active Alerts',value:appState.alerts.length+' alert(s)'}
+  ];
+  el.innerHTML='<div style="font-size:12px">' +
+    situation.map(function(s){ return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6"><span style="color:var(--muted);font-weight:600">'+s.label+'</span><span style="font-weight:700">'+s.value+'</span></div>'; }).join('') +
+    '</div>';
+}
+
+var CHAT_KB = [
+  {kw:['milk','collected','collection','total'],fn:function(){var c=appState.collections,t=c.reduce(function(s,r){ return s+r.qty; },0);return c.length?'Total milk collected: <strong>'+fmt(t)+' L</strong> from '+c.length+' entries ('+new Set(c.map(function(r){ return r.id; })).size+' unique farmers).':'No milk collection records yet. Please add data in the Milk Collection page.'}},
+  {kw:['demand','supply','surplus','deficit','gap'],fn:function(){var ds=appState.lastDemandSupply;return ds?'Demand-Supply Status: <strong>'+ds.status+'</strong>. Supply: '+fmt(ds.supply)+'L | Demand: '+fmt(ds.demand)+'L | Gap: <strong>'+(ds.gap>=0?'+':'')+fmt(ds.gap)+'L</strong>. '+(ds.gap>0?'Action: contact bulk buyers.':'Action: increase procurement.'):'No demand-supply analysis run yet. Go to Demand & Supply page and enter values.'}},
+  {kw:['fodder','feed','stock'],fn:function(){var fo=appState.lastFodder;return fo?'Fodder forecast: '+(fo.remaining>=0?'Stock is <strong>sufficient</strong> for the forecast period. Remaining: '+fmt(fo.remaining)+'kg.':'<strong>Shortage predicted!</strong> Shortage: '+fmt(Math.abs(fo.remaining))+'kg. Recommended purchase: '+fmt(fo.recommended)+'kg.'):'No fodder forecast run yet. Go to Fodder Forecast page and enter values.'}},
+  {kw:['transport','route','cost','fuel'],fn:function(){var rt=appState.lastRoute;return rt?'Last route optimization: Transport cost: <strong>'+fmtR(rt.cost)+'</strong> | Efficiency: <strong>'+rt.efficiency+'%</strong> | Daily saving vs unoptimized: <strong>'+fmtR(rt.saving)+'</strong>.':'No route optimization run yet. Go to Route Optimizer page.'}},
+  {kw:['payment','pay','salary','payout'],fn:function(){var pays=appState.payments,tot=pays.reduce(function(s,p){ return s+p.net; },0);return pays.length?'Total payments processed: '+pays.length+' records. Estimated total: <strong>'+fmtR(tot)+'</strong>. Last payment: '+pays[0].name+' — '+fmtR(pays[0].net)+'.':'No payment records yet. Go to Farmer Payments and calculate.'}},
+  {kw:['health','summary','overview','status'],fn:function(){var c=appState.collections,t=c.reduce(function(s,r){ return s+r.qty; },0),ds=appState.lastDemandSupply;return '<strong>Cooperative Health Summary:</strong><br>• Milk: '+fmt(t)+'L ('+c.length+' records)<br>• Demand-Supply: '+(ds?ds.status+' '+fmt(Math.abs(ds.gap))+'L':'Not analysed')+'<br>• Fodder: '+(appState.lastFodder?(appState.lastFodder.remaining>=0?'Sufficient':'Shortage predicted'):'Not forecasted')+'<br>• Transport: '+(appState.lastRoute?fmtR(appState.lastRoute.cost):'Not optimized')+'<br>• Alerts: '+appState.alerts.length+' active'}},
+  {kw:['alert','warning','issue','problem'],fn:function(){return appState.alerts.length?'There are <strong>'+appState.alerts.length+' active alerts</strong>. Latest: '+appState.alerts[0].icon+' <strong>'+appState.alerts[0].title+'</strong> — '+appState.alerts[0].body:'No active alerts. Your cooperative looks healthy!'}},
+  {kw:['top','best','farmer','perform'],fn:function(){var map={};appState.collections.forEach(function(r){ if(!map[r.id]) map[r.id]={name:r.name,qty:0};map[r.id].qty+=r.qty;});var list=Object.values(map).sort(function(a,b){ return b.qty-a.qty; });return list.length?'🏆 Top farmer: <strong>'+list[0].name+'</strong> with '+fmt(list[0].qty)+'L collected.'+( list.length>1?' Runner-up: '+list[1].name+' ('+fmt(list[1].qty)+'L).':''):'No collection records yet. Add data to see farmer rankings.'}},
+  {kw:['scenario','what-if','simulate'],fn:function(){var sc=appState.lastScenario;return sc?'Last scenario: Milk '+fmt(sc.milk)+'L vs Demand '+fmt(sc.demand)+'L → <strong>'+(sc.gap>=0?'Surplus +'+fmt(sc.gap):'Deficit '+fmt(Math.abs(sc.gap)))+'L</strong>. Transport: '+fmtR(sc.transportCost)+'. Efficiency: '+sc.effScore+'%.':'No scenario run yet. Go to What-If Simulator page.'}}
+];
+
+function getAIResponse(msg) {
+  var lower=msg.toLowerCase();
+  for(var i=0;i<CHAT_KB.length;i++){
+    var entry=CHAT_KB[i];
+    for(var j=0;j<entry.kw.length;j++){
+      if(lower.includes(entry.kw[j])) return entry.fn();
+    }
+  }
+  return 'I understand you\'re asking about "<em>'+msg.replace(/</g,'&lt;')+'</em>". As a demo AI, I can answer questions about: milk collection, demand-supply, fodder, route costs, payments, alerts, top farmers, scenarios, or cooperative health. Try one of the quick questions!';
+}
+function sendChat() {
+  var input=document.getElementById('chat-input'), msg=(input.value||'').trim();
+  if(!msg) return;
+  var chatDiv=document.getElementById('chat-messages');
+  chatDiv.innerHTML+='<div class="chat-msg chat-user">'+msg.replace(/</g,'&lt;')+'</div>';
+  input.value='';
+  chatDiv.innerHTML+='<div class="chat-msg chat-bot" id="typing-ind"><div class="chat-bot-name">🤖 DairySmart AI</div><em>Thinking…</em></div>';
+  chatDiv.scrollTop=chatDiv.scrollHeight;
+  setTimeout(function(){
+    var t=document.getElementById('typing-ind'); if(t) t.remove();
+    chatDiv.innerHTML+='<div class="chat-msg chat-bot"><div class="chat-bot-name">🤖 DairySmart AI</div>'+getAIResponse(msg)+'</div>';
+    chatDiv.scrollTop=chatDiv.scrollHeight;
+  },600);
+}
+function askQuick(q) {
+  showPage('assistant',document.querySelector('[onclick*="assistant"]'));
+  document.querySelectorAll('.nav-item').forEach(function(n){ if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes('assistant')) n.classList.add('active'); });
+  document.getElementById('chat-input').value=q;
+  sendChat();
+}
+
+// ═══════════════════════════════════════════════════════
+// DEMO MODE
+// ═══════════════════════════════════════════════════════
+function startDemo() {
+  if(!confirm('This will load sample cooperative data. Any existing data will be replaced. Continue?')) return;
+  appState.collections=JSON.parse(JSON.stringify(DEMO_COLLECTIONS)).map(function(r,i){
+    var fatBonus=r.fat>=4.5?r.qty*1.5:r.fat>=4.0?r.qty*0.75:0;
+    r.estValue=Math.round(r.qty*r.rate+fatBonus); r.rid=Date.now()+i; return r;
+  });
+  appState.payments=[
+    {name:'Ramesh Patel',period:'Jan 1–10, 2024',qty:120,rate:27,fat:4.2,gross:3240,bonus:90,deduct:360,net:2970,status:'Paid'},
+    {name:'Kiran Modi',period:'Jan 1–10, 2024',qty:195,rate:27,fat:4.3,gross:5265,bonus:195,deduct:500,net:4960,status:'Paid'},
+    {name:'Vijay Chauhan',period:'Jan 1–10, 2024',qty:210,rate:27,fat:4.6,gross:5670,bonus:420,deduct:450,net:5640,status:'Paid'},
+    {name:'Manubhai Shah',period:'Jan 1–10, 2024',qty:156,rate:27,fat:4.5,gross:4212,bonus:234,deduct:400,net:4046,status:'Pending'},
+    {name:'Harish Kumar',period:'Jan 1–10, 2024',qty:165,rate:27,fat:4.4,gross:4455,bonus:165,deduct:380,net:4240,status:'Paid'}
+  ];
+  appState.lastDemandSupply={supply:2480,demand:2200,gap:280,status:'SURPLUS',storage:1000};
+  appState.lastRoute={cost:3240,saving:450,efficiency:92};
+  appState.lastFodder={remaining:200,recommended:550,shortage:300,cattle:50,daily:100,days:30};
+  appState.alerts=[];
+  appState.activityLog=[];
+  document.getElementById('ds-supply').value=2480; document.getElementById('ds-demand').value=2200;
+  document.getElementById('r-centers').value=5; document.getElementById('r-dist').value=8; document.getElementById('r-qty').value=480; document.getElementById('r-vehicles').value=3; document.getElementById('r-fuel').value=95;
+  document.getElementById('fo-cattle').value=50; document.getElementById('fo-stock').value=2500; document.getElementById('fo-daily').value=2; document.getElementById('fo-days').value=30;
+  saveToStorage();
+  addAlert('info','🔵','Demo Mode Active','Sample cooperative data has been loaded. Explore all features to see DairySmart AI in action.');
+  addAlert('warn','🟡','Fodder Forecast Alert','Based on demo data: 30-day forecast shows potential shortage. Purchase recommended.');
+  addAlert('ok','✅','Demand-Supply Check','Demo shows SURPLUS of 280L. Supply (2,480L) exceeds demand (2,200L).');
+  addActivity('🎬 Demo mode activated — 10 farmers, 2480L collection loaded');
+  document.getElementById('demo-bar').classList.add('show');
+  updateDashboardKPIs(); renderCollectionTable(); refreshCollectionSummary();
+  renderActivityLog(); renderAlerts(); renderPaymentHistory();
+  refreshDashboardCharts();           // ← charts now show demo collection data
+  refreshForecastChart();             // ← forecast now shows demo trend + 7-day projection
+  showPage('dashboard',document.querySelector('[onclick*="dashboard"]'));
+  document.querySelectorAll('.nav-item').forEach(function(n,i){ n.classList.toggle('active',i===0); });
+  toast('Demo data loaded! Explore all pages 🚀','ok');
+}
+
+function resetData() {
+  if(!confirm('Reset all data? This cannot be undone.')) return;
+  appState={collections:[],payments:[],alerts:[],activityLog:[],lastDemandSupply:null,lastRoute:null,lastFodder:null,lastScenario:null};
+  localStorage.removeItem('dairySmartState');
+  document.getElementById('demo-bar').classList.remove('show');
+  document.getElementById('cf-result').innerHTML='';
+  document.getElementById('pay-result').innerHTML='';
+  var ds=document.getElementById('ds-result'); if(ds) ds.innerHTML='';
+  var fo=document.getElementById('fo-result'); if(fo) fo.innerHTML='';
+  var rr=document.getElementById('route-result'); if(rr) rr.innerHTML='';
+  updateDashboardKPIs(); renderCollectionTable(); refreshCollectionSummary();
+  refreshDashboardCharts();           // ← charts fall back to seed after reset
+  refreshForecastChart();             // ← forecast falls back to seed after reset
+  renderAlerts(); renderPaymentHistory(); renderActivityLog(); renderFarmerTable();
+  toast('All data reset','warn');
+}
+
+// ═══════════════════════════════════════════════════════
+// GENERATE REPORT (print)
+// ═══════════════════════════════════════════════════════
+function generateReport() {
+  var cols=appState.collections, total=cols.reduce(function(s,r){ return s+r.qty; },0);
+  var payTotal=appState.payments.reduce(function(s,p){ return s+p.net; },0);
+  var ds=appState.lastDemandSupply, fo=appState.lastFodder, rt=appState.lastRoute;
+  var w=window.open('','_blank','width=800,height=900');
+  if(!w) return;
+  w.document.write('<!DOCTYPE html><html><head><title>DairySmart AI — Cooperative Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111;font-size:13px}h1{font-size:22px;margin-bottom:4px}h2{font-size:15px;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee}.label{color:#666}.val{font-weight:700}.ai{background:#f5f3ff;border:1px solid #c4b5fd;border-radius:6px;padding:10px;margin:8px 0;font-size:12px}.footer{margin-top:40px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:12px}@media print{.no-print{display:none}}</style></head><body>');
+  w.document.write('<h1>🥛 DairySmart AI — Cooperative Report</h1><p style="color:#666">Generated: '+new Date().toLocaleString('en-IN')+' &nbsp;|&nbsp; <em>All data is from demo/local records</em></p>');
+  w.document.write('<h2>📊 Milk Collection</h2><div class="row"><span class="label">Total Collected</span><span class="val">'+fmt(total)+' L</span></div><div class="row"><span class="label">Collection Entries</span><span class="val">'+cols.length+'</span></div><div class="row"><span class="label">Unique Farmers</span><span class="val">'+new Set(cols.map(function(r){ return r.id; })).size+'</span></div>');
+  if(ds) w.document.write('<h2>⚖️ Demand & Supply</h2><div class="row"><span class="label">Supply</span><span class="val">'+fmt(ds.supply)+' L</span></div><div class="row"><span class="label">Demand</span><span class="val">'+fmt(ds.demand)+' L</span></div><div class="row"><span class="label">Status</span><span class="val">'+ds.status+' ('+fmt(Math.abs(ds.gap))+'L)</span></div>');
+  if(fo) w.document.write('<h2>🌾 Fodder Status</h2><div class="row"><span class="label">Status</span><span class="val">'+(fo.remaining>=0?'Sufficient':'⚠️ Shortage Predicted')+'</span></div><div class="row"><span class="label">Remaining / Shortage</span><span class="val">'+fmt(Math.abs(fo.remaining))+' kg</span></div>'+(fo.shortage>0?'<div class="row"><span class="label">Recommended Purchase</span><span class="val">'+fmt(fo.recommended)+' kg</span></div>':''));
+  if(rt) w.document.write('<h2>🚚 Transport</h2><div class="row"><span class="label">Estimated Cost</span><span class="val">'+fmtR(rt.cost)+'</span></div><div class="row"><span class="label">Route Efficiency</span><span class="val">'+rt.efficiency+'%</span></div><div class="row"><span class="label">Daily Saving</span><span class="val">'+fmtR(rt.saving)+'</span></div>');
+  w.document.write('<h2>💰 Payments</h2><div class="row"><span class="label">Total Transactions</span><span class="val">'+appState.payments.length+'</span></div><div class="row"><span class="label">Total Payout</span><span class="val">'+fmtR(payTotal)+'</span></div>');
+  w.document.write('<h2>🤖 AI Summary</h2><div class="ai">'+(!cols.length?'No data collected yet.':('Cooperative has '+new Set(cols.map(function(r){ return r.id; })).size+' active farmers with '+fmt(total)+'L total collection. '+(ds?'Supply-demand status: '+ds.status+'.':'')+' '+(fo&&fo.shortage>0?'⚠️ Fodder shortage predicted. ':'')+' '+(rt?'Transport cost: '+fmtR(rt.cost)+' ('+rt.efficiency+'% efficiency).':'')))+'</div>');
+  w.document.write('<div class="footer">DairySmart AI v2.0 · Demo Prototype · All data simulated for demonstration purposes</div>');
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(function(){ w.print(); },500);
+  toast('Report opened in new window','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  loadFromStorage();
+  // Set default date
+  var d=document.getElementById('cf-date'); if(d) d.value=new Date().toISOString().slice(0,10);
+  // Init charts
+  initDashboardCharts();
+  initFodderChart();
+  initDemandChart();
+  // Restore state
+  updateDashboardKPIs();
+  renderCollectionTable();
+  refreshCollectionSummary();
+  renderAlerts();
+  renderPaymentHistory();
+  refreshPaymentChart();
+  renderActivityLog();
+  updateAlertBadge();
+  // Show demo bar if demo data exists
+  if(appState.collections.length>0) document.getElementById('demo-bar').classList.add('show');
+});
+</script>
+</body>
+</html>
